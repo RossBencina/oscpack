@@ -155,7 +155,7 @@ void test1()
         assertEqual( args.Eos(), false );
 
         float f;
-        long n;
+        int32 n;
         bool b;
         args >> f >> n >> b;
 
