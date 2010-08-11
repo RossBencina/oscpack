@@ -164,10 +164,13 @@ std::ostream& operator<<( std::ostream & os,
 
 std::ostream& operator<<( std::ostream & os, const ReceivedMessage& m )
 {
-
-    os << "[" << m.AddressPattern();
+    os << "[";
+    if( m.AddressPatternIsUInt32() )
+        os << m.AddressPatternAsUInt32();
+    else
+        os << m.AddressPattern();
+    
     bool first = true;
-
     for( ReceivedMessage::const_iterator i = m.ArgumentsBegin();
             i != m.ArgumentsEnd(); ++i ){
         if( first ){
