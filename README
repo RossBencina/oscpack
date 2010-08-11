@@ -1,0 +1,46 @@
+oscpack -- Open Sound Control packet manipulation library
+Copyright (c) 2004 Ross Bencina <rossb@audiomulch.com>
+
+A simple C++ library for packing and unpacking OSC packets.
+
+
+Oscpack is simply a set of C++ classes for packing and unpacking OSC packets.
+Oscpack is not a networking library, or a framework for bulding OSC
+applications. Simple classes for UDP networking are included, but you are
+encouraged to use another networking framework. The library should also be
+easy to use for other transport methods (eg serial).
+
+The key goals of this library are:
+
+	- to be a simple and complete implementation of OSC
+	- to be portable to a wide variety of platforms
+	- to allow easy development of robust OSC applications 
+		(for example it should be impossible to crash a server
+		 by sending it malformed packets, and difficult to 
+		 create malformed packets.)
+
+Here's a summary of the key files:
+
+OscReceivedElements -- classes for parsing a packet
+OscPrintRecievedElements -- iostream << operators for printing packet elements
+OscOutboundPacket -- a class for packing messages into a packet
+OscUnitTests -- unit test program for the OSC modules
+OscDump -- a program that prints received OSC packets
+OscSendTests -- examples of how to send messages
+OscReceiveTest -- example of how to receive the messages sent by OSCSendTests
+
+If you fix anything or write a set of TCP send/recieve classes 
+please consider sending me a patch. Thanks :)
+
+
+For more information about Open Sound Control, see:
+http://www.cnmat.berkeley.edu/OpenSoundControl/
+
+
+Thanks to Till Bovermann for helping with POSIX networking code and
+Mac compatibility, and to Martin Kaltenbrunner and the rest of the
+reacTable team for giving me a reason to finish this library. Thanks
+to Merlijn Blaauw for reviewing the interface.
+
+Completed at the Music Technology Group, Audiovisual Institute,
+University Pompeu Fabra, Barcelona, November 2004.
