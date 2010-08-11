@@ -29,8 +29,9 @@
 */
 #include "OscReceiveTest.h"
 
-#include <string.h>
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 #include "osc/OscReceivedElements.h"
 

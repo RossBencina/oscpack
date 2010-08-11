@@ -30,7 +30,8 @@
 #include "OscSendTests.h"
 
 #include <iostream>
-#include <string.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "osc/OscOutboundPacketStream.h"
 
@@ -189,7 +190,7 @@ int main(int argc, char* argv[])
         return 0;
     }
 
-    char *hostName = "localhost";
+    const char *hostName = "localhost";
     int port = 7000;
     
     if( argc >= 2 )

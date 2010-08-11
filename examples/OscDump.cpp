@@ -36,6 +36,8 @@
 
 
 #include <iostream>
+#include <cstring>
+#include <cstdlib>
 
 #include "osc/OscReceivedElements.h"
 #include "osc/OscPrintReceivedElements.h"
