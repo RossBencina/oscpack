@@ -29,7 +29,7 @@
 */
 #include "IpEndpointName.h"
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "NetworkingUtils.h"
 
