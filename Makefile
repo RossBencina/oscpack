@@ -6,8 +6,8 @@ ENDIANESS=OSC_HOST_LITTLE_ENDIAN
 
 CXX = g++
 INCLUDES = -I./
-COPTS  = -Wall -O3
-CDEBUG = -Wall -g 
+COPTS  = -Wall -Wextra -O3
+CDEBUG = -Wall -Wextra -g 
 CXXFLAGS = $(COPTS) $(INCLUDES) -D$(ENDIANESS)
 
 PREFIX = /usr/local
