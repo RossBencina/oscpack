@@ -64,6 +64,8 @@ public:
 	virtual void ProcessPacket( const char *data, int size, 
 			const IpEndpointName& remoteEndpoint )
 	{
+        (void) remoteEndpoint; // suppress unused parameter warning
+
 		std::cout << osc::ReceivedPacket( data, size );
 	}
 };

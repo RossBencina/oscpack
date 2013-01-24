@@ -419,6 +419,8 @@ public:
 
     ReceivedMessageArgumentStream& operator>>( MessageTerminator& rhs )
     {
+        (void) rhs; // suppress unused parameter warning
+
         if( !Eos() )
             throw ExcessArgumentException();
 

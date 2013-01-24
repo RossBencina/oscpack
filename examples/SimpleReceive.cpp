@@ -25,6 +25,8 @@ protected:
     virtual void ProcessMessage( const osc::ReceivedMessage& m, 
 				const IpEndpointName& remoteEndpoint )
     {
+        (void) remoteEndpoint; // suppress unused parameter warning
+
         try{
             // example of parsing single messages. osc::OsckPacketListener
             // handles the bundle traversal.
@@ -67,6 +69,9 @@ protected:
 
 int main(int argc, char* argv[])
 {
+    (void) argc; // suppress unused parameter warnings
+    (void) argv; // suppress unused parameter warnings
+
     ExamplePacketListener listener;
     UdpListeningReceiveSocket s(
             IpEndpointName( IpEndpointName::ANY_ADDRESS, PORT ),

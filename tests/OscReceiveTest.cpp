@@ -57,8 +57,11 @@ namespace osc{
 class OscReceiveTestPacketListener : public OscPacketListener{
 protected:
 
-    void ProcessMessage( const osc::ReceivedMessage& m, const IpEndpointName& remoteEndpoint )
+    void ProcessMessage( const osc::ReceivedMessage& m, 
+            const IpEndpointName& remoteEndpoint )
     {
+        (void) remoteEndpoint; // suppress unused parameter warning
+
         // a more complex scheme involving std::map or some other method of
         // processing address patterns could be used here 
 		// (see MessageMappingOscPacketListener.h for example). however, the main
