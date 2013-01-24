@@ -1,3 +1,16 @@
+January 24, 2013
+------------------
+
+Some member functions that previously used the "int" type for 
+parameters or return values now use std::size_t. This change 
+was made to better support 64 bit platforms.
+
+See SVN revision 70 for details.
+
+Note that oscpack is still not guaranteed to support packets larger 
+than 0x7FFFFFFF (the largest signed 32 bit integer).
+
+
 September 28, 2005
 ------------------
 
