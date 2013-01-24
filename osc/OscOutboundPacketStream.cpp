@@ -45,6 +45,7 @@
 
 #include <cassert>
 #include <cstring> // memcpy, memmove, strcpy, strlen
+#include <cstddef> // ptrdiff_t
 
 #include "OscHostEndianness.h"
 
@@ -216,7 +217,7 @@ void OutboundPacketStream::EndElement( char *endPtr )
         // then we store the element size in the slot. note that the element
         // size does not include the size slot, hence the - 4 below.
 
-        ptrdiff_t d = endPtr - reinterpret_cast<char*>(elementSizePtr_);
+        std::ptrdiff_t d = endPtr - reinterpret_cast<char*>(elementSizePtr_);
         // assert( d >= 4 && d <= 0x7FFFFFFF ); // assume packets smaller than 2Gb
 
         uint32 elementSize = static_cast<uint32>(d - 4);
