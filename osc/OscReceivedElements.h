@@ -39,6 +39,7 @@
 
 #include <cassert>
 #include <cstddef>
+#include <cstring> // size_t
 
 #include "OscTypes.h"
 #include "OscException.h"
@@ -80,9 +81,9 @@ public:
 
 class ReceivedPacket{
 public:
-    ReceivedPacket( const char *contents, int32 size )
+    ReceivedPacket( const char *contents, std::size_t size )
         : contents_( contents )
-        , size_( size )
+        , size_( (int32)size )
     {
         // sanity check integer types declared in OscTypes.h 
         // you'll need to fix OscTypes.h if any of these asserts fail
@@ -100,7 +101,7 @@ public:
 
 private:
     const char *contents_;
-    int32 size_;
+    int32 size_; // keep as int32 (not size_t) to leave structure layout intact
 };
 
 

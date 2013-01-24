@@ -37,6 +37,8 @@
 #ifndef INCLUDED_OSCPACK_OSCOUTBOUNDPACKETSTREAM_H
 #define INCLUDED_OSCPACK_OSCOUTBOUNDPACKETSTREAM_H
 
+#include <cstring> // size_t
+
 #include "OscTypes.h"
 #include "OscException.h"
 
@@ -73,15 +75,15 @@ public:
 
 class OutboundPacketStream{
 public:
-	OutboundPacketStream( char *buffer, unsigned long capacity );
+	OutboundPacketStream( char *buffer, std::size_t capacity );
 	~OutboundPacketStream();
 
     void Clear();
 
-    unsigned int Capacity() const;
+    std::size_t Capacity() const;
 
     // invariant: size() is valid even while building a message.
-    unsigned int Size() const;
+    std::size_t Size() const;
 
     const char *Data() const;
 
@@ -127,7 +129,7 @@ private:
     bool ElementSizeSlotRequired() const;
     void CheckForAvailableBundleSpace();
     void CheckForAvailableMessageSpace( const char *addressPattern );
-    void CheckForAvailableArgumentSpace( long argumentLength );
+    void CheckForAvailableArgumentSpace( std::size_t argumentLength );
 
     char *data_;
     char *end_;

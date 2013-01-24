@@ -144,13 +144,16 @@ static void FromUInt64( char *p, uint64 x )
 }
 
 
-static inline long RoundUp4( long x )
+// round up to the next highest multiple of 4. unless x is already a multiple of 4
+static inline std::size_t RoundUp4( std::size_t x ) 
 {
-    return ((x-1) & (~0x03L)) + 4;
+    //return ((x-1) & (~0x03L)) + 4; not sure why I defined it like this previously -- rossb
+
+    return (x + 3) & ~((std::size_t)0x03);
 }
 
 
-OutboundPacketStream::OutboundPacketStream( char *buffer, unsigned long capacity )
+OutboundPacketStream::OutboundPacketStream( char *buffer, std::size_t capacity )
     : data_( buffer )
     , end_( data_ + capacity )
     , typeTagsCurrent_( end_ )
@@ -208,12 +211,15 @@ void OutboundPacketStream::EndElement( char *endPtr )
         // size slot is stored in the elements size slot (or a ptr to data_
         // if there is no containing element). We retrieve that here
         uint32 *previousElementSizePtr =
-                (uint32*)(data_ + *reinterpret_cast<uint32*>(elementSizePtr_));
+                reinterpret_cast<uint32*>(data_ + *elementSizePtr_);
 
-        // then we store the element size in the slot, note that the element
+        // then we store the element size in the slot. note that the element
         // size does not include the size slot, hence the - 4 below.
-        uint32 elementSize =
-                (endPtr - reinterpret_cast<char*>(elementSizePtr_)) - 4;
+
+        ptrdiff_t d = endPtr - reinterpret_cast<char*>(elementSizePtr_);
+        // assert( d >= 4 && d <= 0x7FFFFFFF ); // assume packets smaller than 2Gb
+
+        uint32 elementSize = static_cast<uint32>(d - 4);
         FromUInt32( reinterpret_cast<char*>(elementSizePtr_), elementSize );
 
         // finally, we reset the element size ptr to the containing element
@@ -230,7 +236,7 @@ bool OutboundPacketStream::ElementSizeSlotRequired() const
 
 void OutboundPacketStream::CheckForAvailableBundleSpace()
 {
-    unsigned long required = Size() + ((ElementSizeSlotRequired())?4:0) + 16;
+    std::size_t required = Size() + ((ElementSizeSlotRequired())?4:0) + 16;
 
     if( required > Capacity() )
         throw OutOfBufferMemoryException();
@@ -240,7 +246,7 @@ void OutboundPacketStream::CheckForAvailableBundleSpace()
 void OutboundPacketStream::CheckForAvailableMessageSpace( const char *addressPattern )
 {
     // plus 4 for at least four bytes of type tag
-     unsigned long required = Size() + ((ElementSizeSlotRequired())?4:0)
+    std::size_t required = Size() + ((ElementSizeSlotRequired())?4:0)
             + RoundUp4(std::strlen(addressPattern) + 1) + 4;
 
     if( required > Capacity() )
@@ -248,10 +254,10 @@ void OutboundPacketStream::CheckForAvailableMessageSpace( const char *addressPat
 }
 
 
-void OutboundPacketStream::CheckForAvailableArgumentSpace( long argumentLength )
+void OutboundPacketStream::CheckForAvailableArgumentSpace( std::size_t argumentLength )
 {
     // plus three for extra type tag, comma and null terminator
-     unsigned long required = (argumentCurrent_ - data_) + argumentLength
+    std::size_t required = (argumentCurrent_ - data_) + argumentLength
             + RoundUp4( (end_ - typeTagsCurrent_) + 3 );
 
     if( required > Capacity() )
@@ -269,15 +275,15 @@ void OutboundPacketStream::Clear()
 }
 
 
-unsigned int OutboundPacketStream::Capacity() const
+std::size_t OutboundPacketStream::Capacity() const
 {
     return end_ - data_;
 }
 
 
-unsigned int OutboundPacketStream::Size() const
+std::size_t OutboundPacketStream::Size() const
 {
-    unsigned int result = argumentCurrent_ - data_;
+    std::size_t result = argumentCurrent_ - data_;
     if( IsMessageInProgress() ){
         // account for the length of the type tag string. the total type tag
         // includes an initial comma, plus at least one terminating \0
@@ -356,11 +362,11 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const BeginMessage& rhs 
     messageCursor_ = BeginElement( messageCursor_ );
 
     std::strcpy( messageCursor_, rhs.addressPattern );
-    unsigned long rhsLength = std::strlen(rhs.addressPattern);
+    std::size_t rhsLength = std::strlen(rhs.addressPattern);
     messageCursor_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
-    unsigned long i = rhsLength + 1;
+    std::size_t i = rhsLength + 1;
     while( i & 0x3 ){
         *messageCursor_++ = '\0';
         ++i;
@@ -382,7 +388,7 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const MessageTerminator&
     if( !IsMessageInProgress() )
         throw MessageNotInProgressException();
 
-    int typeTagsCount = end_ - typeTagsCurrent_;
+    std::size_t typeTagsCount = end_ - typeTagsCurrent_;
 
     if( typeTagsCount ){
 
@@ -390,19 +396,19 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const MessageTerminator&
         std::memcpy( tempTypeTags, typeTagsCurrent_, typeTagsCount );
 
         // slot size includes comma and null terminator
-        int typeTagSlotSize = RoundUp4( typeTagsCount + 2 );
+        std::size_t typeTagSlotSize = RoundUp4( typeTagsCount + 2 );
 
-        uint32 argumentsSize = argumentCurrent_ - messageCursor_;
+        std::size_t argumentsSize = argumentCurrent_ - messageCursor_;
 
         std::memmove( messageCursor_ + typeTagSlotSize, messageCursor_, argumentsSize );
 
         messageCursor_[0] = ',';
         // copy type tags in reverse (really forward) order
-        for( int i=0; i < typeTagsCount; ++i )
+        for( std::size_t i=0; i < typeTagsCount; ++i )
             messageCursor_[i+1] = tempTypeTags[ (typeTagsCount-1) - i ];
 
         char *p = messageCursor_ + 1 + typeTagsCount;
-        for( int i=0; i < (typeTagSlotSize - (typeTagsCount + 1)); ++i )
+        for( std::size_t i=0; i < (typeTagSlotSize - (typeTagsCount + 1)); ++i )
             *p++ = '\0';
 
         typeTagsCurrent_ = end_;
@@ -598,11 +604,11 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const char *rhs )
 
     *(--typeTagsCurrent_) = STRING_TYPE_TAG;
     std::strcpy( argumentCurrent_, rhs );
-    unsigned long rhsLength = std::strlen(rhs);
+    std::size_t rhsLength = std::strlen(rhs);
     argumentCurrent_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
-    unsigned long i = rhsLength + 1;
+    std::size_t i = rhsLength + 1;
     while( i & 0x3 ){
         *argumentCurrent_++ = '\0';
         ++i;
@@ -618,11 +624,11 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const Symbol& rhs )
 
     *(--typeTagsCurrent_) = SYMBOL_TYPE_TAG;
     std::strcpy( argumentCurrent_, rhs );
-    unsigned long rhsLength = std::strlen(rhs);
+    std::size_t rhsLength = std::strlen(rhs);
     argumentCurrent_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
-    unsigned long i = rhsLength + 1;
+    std::size_t i = rhsLength + 1;
     while( i & 0x3 ){
         *argumentCurrent_++ = '\0';
         ++i;

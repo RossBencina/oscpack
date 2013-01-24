@@ -181,14 +181,14 @@ public:
 		isConnected_ = true;
 	}
 
-	void Send( const char *data, int size )
+	void Send( const char *data, std::size_t size )
 	{
 		assert( isConnected_ );
 
         send( socket_, data, size, 0 );
 	}
 
-    void SendTo( const IpEndpointName& remoteEndpoint, const char *data, int size )
+    void SendTo( const IpEndpointName& remoteEndpoint, const char *data, std::size_t size )
 	{
 		sendToAddr_.sin_addr.s_addr = htonl( remoteEndpoint.address );
         sendToAddr_.sin_port = htons( remoteEndpoint.port );
@@ -210,7 +210,7 @@ public:
 
 	bool IsBound() const { return isBound_; }
 
-    int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, int size )
+    int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 	{
 		assert( isBound_ );
 
@@ -251,12 +251,12 @@ void UdpSocket::Connect( const IpEndpointName& remoteEndpoint )
 	impl_->Connect( remoteEndpoint );
 }
 
-void UdpSocket::Send( const char *data, int size )
+void UdpSocket::Send( const char *data, std::size_t size )
 {
 	impl_->Send( data, size );
 }
 
-void UdpSocket::SendTo( const IpEndpointName& remoteEndpoint, const char *data, int size )
+void UdpSocket::SendTo( const IpEndpointName& remoteEndpoint, const char *data, std::size_t size )
 {
 	impl_->SendTo( remoteEndpoint, data, size );
 }
@@ -271,7 +271,7 @@ bool UdpSocket::IsBound() const
 	return impl_->IsBound();
 }
 
-int UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, int size )
+int UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 {
 	return impl_->ReceiveFrom( remoteEndpoint, data, size );
 }

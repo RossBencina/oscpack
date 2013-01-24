@@ -37,6 +37,8 @@
 #ifndef INCLUDED_OSCPACK_UDPSOCKET_H
 #define INCLUDED_OSCPACK_UDPSOCKET_H
 
+#include <cstring> // size_t
+
 #include "NetworkingUtils.h"
 #include "IpEndpointName.h"
 
@@ -100,8 +102,8 @@ public:
 	// Connect to a remote endpoint which is used as the target
 	// for calls to Send()
 	void Connect( const IpEndpointName& remoteEndpoint );	
-	void Send( const char *data, int size );
-    void SendTo( const IpEndpointName& remoteEndpoint, const char *data, int size );
+	void Send( const char *data, std::size_t size );
+    void SendTo( const IpEndpointName& remoteEndpoint, const char *data, std::size_t size );
 
 
 	// Bind a local endpoint to receive incoming data. Endpoint
@@ -109,7 +111,7 @@ public:
 	void Bind( const IpEndpointName& localEndpoint );
 	bool IsBound() const;
 
-	int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, int size );
+	int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size );
 };
 
 
