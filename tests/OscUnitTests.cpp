@@ -337,7 +337,11 @@ void test3()
     TEST_PACK_UNPACK( "/a_bool", false, bool, AsBool );
     TEST_PACK_UNPACK( "/a_bool", (bool)1, bool, AsBool );
 
+
+#ifndef _OBJC_OBJC_H_
     TEST_PACK_UNPACK0( "/nil", Nil, true, IsNil );
+#endif
+    TEST_PACK_UNPACK0( "/nil", OscNil, true, IsNil );
     TEST_PACK_UNPACK0( "/inf", Infinitum, true, IsInfinitum );
 
     TEST_PACK_UNPACK( "/an_int", (int32)1234, int32, AsInt32 );

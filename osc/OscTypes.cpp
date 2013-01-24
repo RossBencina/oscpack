@@ -41,7 +41,10 @@ namespace osc{
 BundleInitiator BeginBundleImmediate(1);
 BundleTerminator EndBundle;
 MessageTerminator EndMessage;
-NilType Nil;
+NilType OscNil;
+#ifndef _OBJC_OBJC_H_
+NilType Nil; // Objective-C defines Nil. so our Nil is deprecated. use OscNil instead
+#endif
 InfinitumType Infinitum;
 
 } // namespace osc

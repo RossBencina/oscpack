@@ -132,8 +132,11 @@ extern MessageTerminator EndMessage;
 struct NilType{
 };
 
-extern NilType Nil;
+extern NilType OscNil;
 
+#ifndef _OBJC_OBJC_H_
+extern NilType Nil; // Objective-C defines Nil. so our Nil is deprecated. use OscNil instead
+#endif
 
 struct InfinitumType{
 };
