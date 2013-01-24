@@ -81,7 +81,15 @@ class ReceivedPacket{
 public:
     ReceivedPacket( const char *contents, int32 size )
         : contents_( contents )
-        , size_( size ) {}
+        , size_( size )
+    {
+        // sanity check integer types declared in OscTypes.h 
+        // you'll need to fix OscTypes.h if any of these asserts fail
+        assert( sizeof(osc::int32) == 4 );
+        assert( sizeof(osc::uint32) == 4 );
+        assert( sizeof(osc::int64) == 8 );
+        assert( sizeof(osc::uint64) == 8 );
+    }
 
     bool IsMessage() const { return !IsBundle(); }
     bool IsBundle() const;
