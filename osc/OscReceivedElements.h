@@ -37,6 +37,7 @@
 #ifndef INCLUDED_OSCPACK_OSCRECEIVEDELEMENTS_H
 #define INCLUDED_OSCPACK_OSCRECEIVEDELEMENTS_H
 
+#include <cassert>
 #include <cstddef>
 
 #include "OscTypes.h"

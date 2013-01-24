@@ -37,7 +37,7 @@
 #ifndef INCLUDED_OSCPACK_MESSAGEMAPPINGOSCPACKETLISTENER_H
 #define INCLUDED_OSCPACK_MESSAGEMAPPINGOSCPACKETLISTENER_H
 
-#include <string.h>
+#include <cstring>
 #include <map>
 
 #include "OscPacketListener.h"
@@ -68,7 +68,7 @@ protected:
 private:
     struct cstr_compare{
         bool operator()( const char *lhs, const char *rhs ) const
-            { return strcmp( lhs, rhs ) < 0; }
+            { return std::strcmp( lhs, rhs ) < 0; }
     };
 
     typedef std::map<const char*, function_type, cstr_compare> function_map_type;

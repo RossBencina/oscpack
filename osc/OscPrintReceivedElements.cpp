@@ -36,11 +36,16 @@
 */
 #include "OscPrintReceivedElements.h"
 
+#include <cstring>
+#include <ctime>
 #include <iostream>
 #include <iomanip>
-#include <ctime>
-#include <cstring>
 
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcpy__;  // avoid error: E2316 '__strcpy__' is not a member of 'std'.
+}
+#endif
 
 namespace osc{
 
@@ -123,9 +128,9 @@ std::ostream& operator<<( std::ostream & os,
 
                 // strip trailing newline from string returned by ctime
                 const char *timeString = std::ctime( &t );
-                size_t len = strlen( timeString );
+                size_t len = std::strlen( timeString );
                 char *s = new char[ len + 1 ];
-                strcpy( s, timeString );
+                std::strcpy( s, timeString );
                 if( len )
                     s[ len - 1 ] = '\0';
                     

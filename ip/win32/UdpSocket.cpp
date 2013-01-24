@@ -35,20 +35,23 @@
 	above license is reproduced.
 */
 
-#include "ip/UdpSocket.h"
-
 #include <winsock2.h>   // this must come first to prevent errors with MSVC7
 #include <windows.h>
 #include <mmsystem.h>   // for timeGetTime()
 
-#include <vector>
-#include <algorithm>
-#include <stdexcept>
-#include <assert.h>
-
 #ifndef WINCE
 #include <signal.h>
 #endif
+
+#include <algorithm>
+#include <cassert>
+#include <cstring> // for memset
+#include <stdexcept>
+#include <vector>
+
+#include "ip/UdpSocket.h" // usually I'd include the module header first
+                          // but this is causing conflicts with BCB4 due to
+                          // std::size_t usage.
 
 #include "ip/NetworkingUtils.h"
 #include "ip/PacketListener.h"
@@ -60,7 +63,7 @@ typedef int socklen_t;
 
 static void SockaddrFromIpEndpointName( struct sockaddr_in& sockAddr, const IpEndpointName& endpoint )
 {
-    memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
+    std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
     sockAddr.sin_family = AF_INET;
 
 	sockAddr.sin_addr.s_addr = 
@@ -109,7 +112,7 @@ public:
             throw std::runtime_error("unable to create udp socket\n");
         }
 
-		memset( &sendToAddr_, 0, sizeof(sendToAddr_) );
+		std::memset( &sendToAddr_, 0, sizeof(sendToAddr_) );
         sendToAddr_.sin_family = AF_INET;
 	}
 
@@ -134,7 +137,7 @@ public:
         // get the address
 
         struct sockaddr_in sockAddr;
-        memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
+        std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
         socklen_t length = sizeof(sockAddr);
         if (getsockname(socket_, (struct sockaddr *)&sockAddr, &length) < 0) {
             throw std::runtime_error("unable to getsockname\n");

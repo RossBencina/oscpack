@@ -36,9 +36,15 @@
 */
 #include "OscSendTests.h"
 
-#include <iostream>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
+
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcmp__;  // avoid error: E2316 '__strcmp__' is not a member of 'std'.
+}
+#endif
 
 #include "osc/OscOutboundPacketStream.h"
 
@@ -192,7 +198,7 @@ void RunSendTests( const IpEndpointName& host )
 
 int main(int argc, char* argv[])
 {
-    if( argc >= 2 && strcmp( argv[1], "-h" ) == 0 ){
+    if( argc >= 2 && std::strcmp( argv[1], "-h" ) == 0 ){
         std::cout << "usage: OscSendTests [hostname [port]]\n";
         return 0;
     }
@@ -204,7 +210,7 @@ int main(int argc, char* argv[])
         hostName = argv[1];
 
     if( argc >= 3 )
-        port = atoi( argv[2] );
+        port = std::atoi( argv[2] );
 
 
 	IpEndpointName host( hostName, port );

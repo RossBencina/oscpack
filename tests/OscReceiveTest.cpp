@@ -36,9 +36,15 @@
 */
 #include "OscReceiveTest.h"
 
-#include <iostream>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
+#include <iostream>
+
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcmp__;  // avoid error: E2316 '__strcmp__' is not a member of 'std'.
+}
+#endif
 
 #include "osc/OscReceivedElements.h"
 
@@ -65,7 +71,7 @@ protected:
             ReceivedMessageArgumentStream args = m.ArgumentStream();
             ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
             
-            if( strcmp( m.AddressPattern(), "/test1" ) == 0 ){
+            if( std::strcmp( m.AddressPattern(), "/test1" ) == 0 ){
 
                 // example #1:
                 // parse an expected format using the argument stream interface:
@@ -78,7 +84,7 @@ protected:
                 std::cout << "received '/test1' message with arguments: "
                         << a1 << " " << a2 << " " << a3 << " " << a4 << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/test2" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/test2" ) == 0 ){
 
                 // example #2:
                 // parse an expected format using the argument iterator interface
@@ -94,7 +100,7 @@ protected:
                 std::cout << "received '/test2' message with arguments: "
                          << a1 << " " << a2 << " " << a3 << " " << a4 << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/test3" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/test3" ) == 0 ){
 
                 // example #3:
                 // parse a variable argument format using the argument iterator
@@ -129,38 +135,38 @@ protected:
                     throw ExcessArgumentException();
 
                     
-            }else if( strcmp( m.AddressPattern(), "/no_arguments" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/no_arguments" ) == 0 ){
 
                 args >> osc::EndMessage;
                 std::cout << "received '/no_arguments' message\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_bool" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_bool" ) == 0 ){
 
                 bool a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_bool' message: " << a << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/nil" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/nil" ) == 0 ){
 
                 std::cout << "received '/nil' message\n";
 
-            }else if( strcmp( m.AddressPattern(), "/inf" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/inf" ) == 0 ){
 
                 std::cout << "received '/inf' message\n";
 
-            }else if( strcmp( m.AddressPattern(), "/an_int" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/an_int" ) == 0 ){
 
                 osc::int32 a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/an_int' message: " << a << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_float" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_float" ) == 0 ){
 
                 float a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_float' message: " << a << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_char" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_char" ) == 0 ){
 
                 char a;
                 args >> a >> osc::EndMessage;
@@ -168,49 +174,49 @@ protected:
                 s[0] = a;
                 std::cout << "received '/a_char' message: '" << s << "'\n";
 
-            }else if( strcmp( m.AddressPattern(), "/an_rgba_color" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/an_rgba_color" ) == 0 ){
 
                 osc::RgbaColor a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/an_rgba_color' message: " << a.value << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_midi_message" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_midi_message" ) == 0 ){
 
                 osc::MidiMessage a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_midi_message' message: " << a.value << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/an_int64" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/an_int64" ) == 0 ){
 
                 osc::int64 a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/an_int64' message: " << a << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_time_tag" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_time_tag" ) == 0 ){
 
                 osc::TimeTag a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_time_tag' message: " << a.value << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_double" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_double" ) == 0 ){
 
                 double a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_double' message: " << a << "\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_string" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_string" ) == 0 ){
 
                 const char *a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_string' message: '" << a << "'\n";
 
-            }else if( strcmp( m.AddressPattern(), "/a_symbol" ) == 0 ){
+            }else if( std::strcmp( m.AddressPattern(), "/a_symbol" ) == 0 ){
 
                 osc::Symbol a;
                 args >> a >> osc::EndMessage;
                 std::cout << "received '/a_symbol' message: '" << a.value << "'\n";
 
-             }else if( strcmp( m.AddressPattern(), "/a_blob" ) == 0 ){
+             }else if( std::strcmp( m.AddressPattern(), "/a_blob" ) == 0 ){
 
                 osc::Blob a;
                 args >> a >> osc::EndMessage;
@@ -250,7 +256,7 @@ void RunReceiveTest( int port )
 
 int main(int argc, char* argv[])
 {
-	if( argc >= 2 && strcmp( argv[1], "-h" ) == 0 ){
+	if( argc >= 2 && std::strcmp( argv[1], "-h" ) == 0 ){
         std::cout << "usage: OscReceiveTest [port]\n";
         return 0;
     }
@@ -258,7 +264,7 @@ int main(int argc, char* argv[])
 	int port = 7000;
 
 	if( argc >= 2 )
-		port = atoi( argv[1] );
+		port = std::atoi( argv[1] );
 
     osc::RunReceiveTest( port );
 

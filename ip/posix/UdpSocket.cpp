@@ -36,15 +36,6 @@
 */
 #include "ip/UdpSocket.h"
 
-#include <vector>
-#include <algorithm>
-#include <stdexcept>
-#include <assert.h>
-#include <signal.h>
-#include <math.h>
-#include <errno.h>
-#include <string.h> // for memset
-
 #include <pthread.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -55,19 +46,30 @@
 #include <sys/time.h>
 #include <netinet/in.h> // for sockaddr_in
 
+#include <signal.h>
+#include <math.h>
+#include <errno.h>
+#include <string.h> 
+
+#include <algorithm>
+#include <cassert>
+#include <cstring> // for memset
+#include <stdexcept>
+#include <vector>
+
 #include "ip/PacketListener.h"
 #include "ip/TimerListener.h"
 
 
 #if defined(__APPLE__) && !defined(_SOCKLEN_T)
-// pre system 10.3 didn have socklen_t
+// pre system 10.3 didn't have socklen_t
 typedef ssize_t socklen_t;
 #endif
 
 
 static void SockaddrFromIpEndpointName( struct sockaddr_in& sockAddr, const IpEndpointName& endpoint )
 {
-    memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
+    std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
     sockAddr.sin_family = AF_INET;
 
 	sockAddr.sin_addr.s_addr = 
@@ -114,7 +116,7 @@ public:
             throw std::runtime_error("unable to create udp socket\n");
         }
 
-		memset( &sendToAddr_, 0, sizeof(sendToAddr_) );
+		std::memset( &sendToAddr_, 0, sizeof(sendToAddr_) );
         sendToAddr_.sin_family = AF_INET;
 	}
 
@@ -139,7 +141,7 @@ public:
         // get the address
 
         struct sockaddr_in sockAddr;
-        memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
+        std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
         socklen_t length = sizeof(sockAddr);
         if (getsockname(socket_, (struct sockaddr *)&sockAddr, &length) < 0) {
             throw std::runtime_error("unable to getsockname\n");
@@ -156,7 +158,7 @@ public:
 			// unconnect from the remote address
 		
 			struct sockaddr_in unconnectSockAddr;
-			memset( (char *)&unconnectSockAddr, 0, sizeof(unconnectSockAddr ) );
+			std::memset( (char *)&unconnectSockAddr, 0, sizeof(unconnectSockAddr ) );
 			unconnectSockAddr.sin_family = AF_UNSPEC;
 			// address fields are zero
 			int connectResult = connect(socket_, (struct sockaddr *)&unconnectSockAddr, sizeof(unconnectSockAddr));

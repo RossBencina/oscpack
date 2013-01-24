@@ -39,9 +39,7 @@
 
 #include <iosfwd>
 
-#ifndef INCLUDED_OSCRECEIVEDELEMENTS_H
 #include "OscReceivedElements.h"
-#endif /* INCLUDED_OSCRECEIVEDELEMENTS_H */
 
 
 namespace osc{

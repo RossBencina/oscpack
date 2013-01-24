@@ -36,14 +36,20 @@
 */
 #include "OscUnitTests.h"
 
-#include <iostream>
-#include <iomanip>
 #include <cstring>
+#include <iomanip>
+#include <iostream>
 
 #include "osc/OscReceivedElements.h"
 #include "osc/OscPrintReceivedElements.h"
 #include "osc/OscOutboundPacketStream.h"
 
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcmp__;  // avoid error: E2316 '__strcmp__' is not a member of 'std'.
+using ::__strcpy__;  // avoid error: E2316 '__strcpy__' is not a member of 'std'.
+}
+#endif
 
 namespace osc{
 
@@ -87,7 +93,7 @@ void assertEqual_( const T* lhs, const T* rhs, const char *slhs, const char *srh
 template <>
 void assertEqual_( const char* lhs, const char* rhs, const char *slhs, const char *srhs, const char *file, int line )
 {
-    if( strcmp( lhs, rhs ) == 0 )
+    if( std::strcmp( lhs, rhs ) == 0 )
         pass_equality( slhs, srhs, file, line );
     else
         fail_equality( slhs, srhs, file, line );
@@ -107,7 +113,7 @@ char * AllocateAligned4( unsigned long size )
 char * NewMessageBuffer( const char *s, unsigned long length )
 {
     char *p = AllocateAligned4( length );
-    memcpy( p, s, length );
+    std::memcpy( p, s, length );
     return p;
 }
 
@@ -121,8 +127,8 @@ void test1()
     try{
         ReceivedMessage m( ReceivedPacket(buffer, sizeof(s)-1) );
 
-        assertEqual( strcmp( m.AddressPattern(), "/test" ), 0 );
-        assertEqual( strcmp( m.TypeTags(), "fiT" ), 0 );
+        assertEqual( std::strcmp( m.AddressPattern(), "/test" ), 0 );
+        assertEqual( std::strcmp( m.TypeTags(), "fiT" ), 0 );
         
         ReceivedMessage::const_iterator i = m.ArgumentsBegin();
         ++i;
@@ -258,7 +264,7 @@ void test2()
 
 #define TEST_PACK_UNPACK0( addressPattern, argument, value, recieveGetter ) \
     {                                    \
-        memset( buffer, 0x74, bufferSize );   \
+        std::memset( buffer, 0x74, bufferSize );   \
         OutboundPacketStream ps( buffer, bufferSize ); \
         ps << BeginMessage( addressPattern )  \
             << argument \
@@ -269,7 +275,7 @@ void test2()
         assertEqual( m.ArgumentsBegin()-> recieveGetter () , value );\
     }  \
     {                                    \
-        memset( buffer, 0x74, bufferSize );   \
+        std::memset( buffer, 0x74, bufferSize );   \
         OutboundPacketStream ps( buffer, bufferSize ); \
         ps << BeginBundle( 1234 ) \
             << BeginMessage( addressPattern )  \
@@ -285,7 +291,7 @@ void test2()
     
 #define TEST_PACK_UNPACK( addressPattern, argument, type, recieveGetter ) \
     {                                    \
-        memset( buffer, 0x74, bufferSize );   \
+        std::memset( buffer, 0x74, bufferSize );   \
         OutboundPacketStream ps( buffer, bufferSize ); \
         ps << BeginMessage( addressPattern )  \
             << argument \
@@ -296,7 +302,7 @@ void test2()
         assertEqual( m.ArgumentsBegin()-> recieveGetter () , ( type ) argument );\
     }  \
     {                                    \
-        memset( buffer, 0x74, bufferSize );   \
+        std::memset( buffer, 0x74, bufferSize );   \
         OutboundPacketStream ps( buffer, bufferSize ); \
         ps << BeginBundle( 1234 ) \
             << BeginMessage( addressPattern )  \
@@ -318,7 +324,7 @@ void test3()
 // single message tests
     // empty message
     {
-        memset( buffer, 0x74, bufferSize );
+        std::memset( buffer, 0x74, bufferSize );
         OutboundPacketStream ps( buffer, bufferSize );
         ps << BeginMessage( "/no_arguments" )
             << EndMessage;
@@ -353,7 +359,7 @@ void test3()
     // blob
     {
         char blobData[] = "abcd";
-        memset( buffer, 0x74, bufferSize );
+        std::memset( buffer, 0x74, bufferSize );
         OutboundPacketStream ps( buffer, bufferSize );
         ps << BeginMessage( "/a_blob" )
             << Blob( blobData, 4 )
@@ -378,7 +384,7 @@ void test3()
     // nested bundles, and multiple messages in bundles...
 
     {
-        memset( buffer, 0x74, bufferSize );
+        std::memset( buffer, 0x74, bufferSize );
         OutboundPacketStream ps( buffer, bufferSize );
         ps << BeginBundle()
             << BeginMessage( "/message_one" ) << 1 << 2 << 3 << 4 << EndMessage

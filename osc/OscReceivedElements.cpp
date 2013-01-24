@@ -36,8 +36,6 @@
 */
 #include "OscReceivedElements.h"
 
-#include <cassert>
-
 #include "OscHostEndianness.h"
 
 

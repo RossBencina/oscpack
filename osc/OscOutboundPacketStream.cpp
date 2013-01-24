@@ -36,16 +36,23 @@
 */
 #include "OscOutboundPacketStream.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-
-#if defined(__WIN32__) || defined(WIN32)
+#if defined(__WIN32__) || defined(WIN32) || defined(_WIN32)
 #include <malloc.h> // for alloca
+#else
+//#include <alloca.h> // alloca on Linux (also OSX)
+#include <stdlib.h> // alloca on OSX and FreeBSD (and Linux?)
 #endif
+
+#include <cassert>
+#include <cstring> // memcpy, memmove, strcpy, strlen
 
 #include "OscHostEndianness.h"
 
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcpy__;  // avoid error: E2316 '__strcpy__' is not a member of 'std'.
+}
+#endif
 
 namespace osc{
 
@@ -234,7 +241,7 @@ void OutboundPacketStream::CheckForAvailableMessageSpace( const char *addressPat
 {
     // plus 4 for at least four bytes of type tag
      unsigned long required = Size() + ((ElementSizeSlotRequired())?4:0)
-            + RoundUp4(strlen(addressPattern) + 1) + 4;
+            + RoundUp4(std::strlen(addressPattern) + 1) + 4;
 
     if( required > Capacity() )
         throw OutOfBufferMemoryException();
@@ -314,7 +321,7 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const BundleInitiator& r
 
     messageCursor_ = BeginElement( messageCursor_ );
 
-    memcpy( messageCursor_, "#bundle\0", 8 );
+    std::memcpy( messageCursor_, "#bundle\0", 8 );
     FromUInt64( messageCursor_ + 8, rhs.timeTag );
 
     messageCursor_ += 16;
@@ -348,8 +355,8 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const BeginMessage& rhs 
 
     messageCursor_ = BeginElement( messageCursor_ );
 
-    strcpy( messageCursor_, rhs.addressPattern );
-    unsigned long rhsLength = strlen(rhs.addressPattern);
+    std::strcpy( messageCursor_, rhs.addressPattern );
+    unsigned long rhsLength = std::strlen(rhs.addressPattern);
     messageCursor_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
@@ -380,14 +387,14 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const MessageTerminator&
     if( typeTagsCount ){
 
         char *tempTypeTags = (char*)alloca(typeTagsCount);
-        memcpy( tempTypeTags, typeTagsCurrent_, typeTagsCount );
+        std::memcpy( tempTypeTags, typeTagsCurrent_, typeTagsCount );
 
         // slot size includes comma and null terminator
         int typeTagSlotSize = RoundUp4( typeTagsCount + 2 );
 
         uint32 argumentsSize = argumentCurrent_ - messageCursor_;
 
-        memmove( messageCursor_ + typeTagSlotSize, messageCursor_, argumentsSize );
+        std::memmove( messageCursor_ + typeTagSlotSize, messageCursor_, argumentsSize );
 
         messageCursor_[0] = ',';
         // copy type tags in reverse (really forward) order
@@ -405,7 +412,7 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const MessageTerminator&
 
     }else{
         // send an empty type tags string
-        memcpy( messageCursor_, ",\0\0\0", 4 );
+        std::memcpy( messageCursor_, ",\0\0\0", 4 );
 
         // advance messageCursor_ for next message
         messageCursor_ += 4;
@@ -587,11 +594,11 @@ OutboundPacketStream& OutboundPacketStream::operator<<( double rhs )
 
 OutboundPacketStream& OutboundPacketStream::operator<<( const char *rhs )
 {
-    CheckForAvailableArgumentSpace( RoundUp4(strlen(rhs) + 1) );
+    CheckForAvailableArgumentSpace( RoundUp4(std::strlen(rhs) + 1) );
 
     *(--typeTagsCurrent_) = STRING_TYPE_TAG;
-    strcpy( argumentCurrent_, rhs );
-    unsigned long rhsLength = strlen(rhs);
+    std::strcpy( argumentCurrent_, rhs );
+    unsigned long rhsLength = std::strlen(rhs);
     argumentCurrent_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
@@ -607,11 +614,11 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const char *rhs )
 
 OutboundPacketStream& OutboundPacketStream::operator<<( const Symbol& rhs )
 {
-    CheckForAvailableArgumentSpace( RoundUp4(strlen(rhs) + 1) );
+    CheckForAvailableArgumentSpace( RoundUp4(std::strlen(rhs) + 1) );
 
     *(--typeTagsCurrent_) = SYMBOL_TYPE_TAG;
-    strcpy( argumentCurrent_, rhs );
-    unsigned long rhsLength = strlen(rhs);
+    std::strcpy( argumentCurrent_, rhs );
+    unsigned long rhsLength = std::strlen(rhs);
     argumentCurrent_ += rhsLength + 1;
 
     // zero pad to 4-byte boundary
@@ -633,7 +640,7 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const Blob& rhs )
     FromUInt32( argumentCurrent_, rhs.size );
     argumentCurrent_ += 4;
     
-    memcpy( argumentCurrent_, rhs.data, rhs.size );
+    std::memcpy( argumentCurrent_, rhs.data, rhs.size );
     argumentCurrent_ += rhs.size;
 
     // zero pad to 4-byte boundary

@@ -46,6 +46,12 @@
 #include <cstring>
 #include <cstdlib>
 
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcmp__;  // avoid error: E2316 '__strcmp__' is not a member of 'std'.
+}
+#endif
+
 #include "osc/OscReceivedElements.h"
 #include "osc/OscPrintReceivedElements.h"
 
@@ -64,7 +70,7 @@ public:
 
 int main(int argc, char* argv[])
 {
-	if( argc >= 2 && strcmp( argv[1], "-h" ) == 0 ){
+	if( argc >= 2 && std::strcmp( argv[1], "-h" ) == 0 ){
         std::cout << "usage: OscDump [port]\n";
         return 0;
     }
@@ -72,7 +78,7 @@ int main(int argc, char* argv[])
 	int port = 7000;
 
 	if( argc >= 2 )
-		port = atoi( argv[1] );
+		port = std::atoi( argv[1] );
 
 	OscDumpPacketListener listener;
     UdpListeningReceiveSocket s(

@@ -6,6 +6,12 @@
 #include <iostream>
 #include <cstring>
 
+#if defined(__BORLANDC__) // workaround for BCB4 release build intrinsics bug
+namespace std {
+using ::__strcmp__;  // avoid error: E2316 '__strcmp__' is not a member of 'std'.
+}
+#endif
+
 #include "osc/OscReceivedElements.h"
 #include "osc/OscPacketListener.h"
 #include "ip/UdpSocket.h"
