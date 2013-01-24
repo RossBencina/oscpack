@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_NETWORKINGUTILS_H
-#define INCLUDED_NETWORKINGUTILS_H
+#ifndef INCLUDED_OSCPACK_NETWORKINGUTILS_H
+#define INCLUDED_OSCPACK_NETWORKINGUTILS_H
 
 
 // in general NetworkInitializer is only used internally, but if you're 
@@ -53,4 +53,4 @@ public:
 unsigned long GetHostByName( const char *name );
 
 
-#endif /* INCLUDED_NETWORKINGUTILS_H */
+#endif /* INCLUDED_OSCPACK_NETWORKINGUTILS_H */

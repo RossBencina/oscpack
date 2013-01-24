@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_PACKETLISTENER_H
-#define INCLUDED_PACKETLISTENER_H
+#ifndef INCLUDED_OSCPACK_PACKETLISTENER_H
+#define INCLUDED_OSCPACK_PACKETLISTENER_H
 
 
 class IpEndpointName;
@@ -47,4 +47,4 @@ public:
 			const IpEndpointName& remoteEndpoint ) = 0;
 };
 
-#endif /* INCLUDED_PACKETLISTENER_H */
+#endif /* INCLUDED_OSCPACK_PACKETLISTENER_H */

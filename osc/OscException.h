@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_OSC_EXCEPTION_H
-#define INCLUDED_OSC_EXCEPTION_H
+#ifndef INCLUDED_OSCPACK_OSCEXCEPTION_H
+#define INCLUDED_OSCPACK_OSCEXCEPTION_H
 
 #include <exception>
 
@@ -58,4 +58,4 @@ public:
 
 } // namespace osc
 
-#endif /* INCLUDED_OSC_EXCEPTION_H */
+#endif /* INCLUDED_OSCPACK_OSCEXCEPTION_H */

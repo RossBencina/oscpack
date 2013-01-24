@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_OSCOUTBOUNDPACKET_H
-#define INCLUDED_OSCOUTBOUNDPACKET_H
+#ifndef INCLUDED_OSCPACK_OSCOUTBOUNDPACKETSTREAM_H
+#define INCLUDED_OSCPACK_OSCOUTBOUNDPACKETSTREAM_H
 
 #include "OscTypes.h"
 #include "OscException.h"
@@ -146,4 +146,4 @@ private:
 
 } // namespace osc
 
-#endif /* INCLUDED_OSC_OUTBOUND_PACKET_H */
+#endif /* INCLUDED_OSCPACK_OSCOUTBOUNDPACKETSTREAM_H */

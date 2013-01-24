@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_OSCRECEIVEDELEMENTS_H
-#define INCLUDED_OSCRECEIVEDELEMENTS_H
+#ifndef INCLUDED_OSCPACK_OSCRECEIVEDELEMENTS_H
+#define INCLUDED_OSCPACK_OSCRECEIVEDELEMENTS_H
 
 #include <cstddef>
 
@@ -492,4 +492,4 @@ private:
 } // namespace osc
 
 
-#endif /* INCLUDED_OSCRECEIVEDELEMENTS_H */
+#endif /* INCLUDED_OSCPACK_OSCRECEIVEDELEMENTS_H */

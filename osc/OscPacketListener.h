@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_OSCPACKETLISTENER_H
-#define INCLUDED_OSCPACKETLISTENER_H
+#ifndef INCLUDED_OSCPACK_OSCPACKETLISTENER_H
+#define INCLUDED_OSCPACK_OSCPACKETLISTENER_H
 
 #include "OscReceivedElements.h"
 #include "../ip/PacketListener.h"
@@ -76,4 +76,4 @@ public:
 
 } // namespace osc
 
-#endif /* INCLUDED_OSCPACKETLISTENER_H */
+#endif /* INCLUDED_OSCPACK_OSCPACKETLISTENER_H */

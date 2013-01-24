@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_MESSAGEMAPPINGOSCPACKETLISTENER_H
-#define INCLUDED_MESSAGEMAPPINGOSCPACKETLISTENER_H
+#ifndef INCLUDED_OSCPACK_MESSAGEMAPPINGOSCPACKETLISTENER_H
+#define INCLUDED_OSCPACK_MESSAGEMAPPINGOSCPACKETLISTENER_H
 
 #include <string.h>
 #include <map>
@@ -77,4 +77,4 @@ private:
 
 } // namespace osc
 
-#endif /* INCLUDED_MESSAGEMAPPINGOSCPACKETLISTENER_H */
+#endif /* INCLUDED_OSCPACK_MESSAGEMAPPINGOSCPACKETLISTENER_H */

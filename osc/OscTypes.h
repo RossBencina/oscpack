@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_OSCTYPES_H
-#define INCLUDED_OSCTYPES_H
+#ifndef INCLUDED_OSCPACK_OSCTYPES_H
+#define INCLUDED_OSCPACK_OSCTYPES_H
 
 
 namespace osc{
@@ -187,4 +187,4 @@ struct Blob{
 } // namespace osc
 
 
-#endif /* INCLUDED_OSCTYPES_H */
+#endif /* INCLUDED_OSCPACK_OSCTYPES_H */

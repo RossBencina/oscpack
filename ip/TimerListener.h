@@ -34,8 +34,8 @@
 	requested that these non-binding requests be included whenever the
 	above license is reproduced.
 */
-#ifndef INCLUDED_TIMERLISTENER_H
-#define INCLUDED_TIMERLISTENER_H
+#ifndef INCLUDED_OSCPACK_TIMERLISTENER_H
+#define INCLUDED_OSCPACK_TIMERLISTENER_H
 
 
 class TimerListener{
@@ -44,4 +44,4 @@ public:
     virtual void TimerExpired() = 0;
 };
 
-#endif /* INCLUDED_TIMERLISTENER_H */
+#endif /* INCLUDED_OSCPACK_TIMERLISTENER_H */
