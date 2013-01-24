@@ -47,7 +47,8 @@ class Exception : public std::exception {
 public:
     Exception() throw() {}
     Exception( const Exception& src ) throw()
-        : what_( src.what_ ) {}
+        : std::exception( src )
+        , what_( src.what_ ) {}
     Exception( const char *w ) throw()
         : what_( w ) {}
     Exception& operator=( const Exception& src ) throw()
