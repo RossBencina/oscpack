@@ -373,9 +373,9 @@ void test3()
         std::cout << m << "\n";
 
         const void *value;
-        unsigned long size;
+        osc_bundle_element_size_t size;
         m.ArgumentsBegin()->AsBlob( value, size );
-        assertEqual( size, (unsigned long)4 );
+        assertEqual( size, (osc_bundle_element_size_t)4 );
         assertEqual( (memcmp( value, blobData, 4 ) == 0), true );
     }
 
