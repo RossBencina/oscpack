@@ -205,7 +205,7 @@ public:
 
 	bool IsBound() const { return isBound_; }
 
-    int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
+    std::size_t ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 	{
 		assert( isBound_ );
 
@@ -266,7 +266,7 @@ bool UdpSocket::IsBound() const
 	return impl_->IsBound();
 }
 
-int UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
+std::size_t UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 {
 	return impl_->ReceiveFrom( remoteEndpoint, data, size );
 }
@@ -425,9 +425,9 @@ public:
 
 			if( waitResult != WAIT_TIMEOUT ){
 				for( int i = waitResult - WAIT_OBJECT_0; i < (int)socketListeners_.size(); ++i ){
-					int size = socketListeners_[i].second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
+					std::size_t size = socketListeners_[i].second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
 					if( size > 0 ){
-						socketListeners_[i].first->ProcessPacket( data, size, remoteEndpoint );
+						socketListeners_[i].first->ProcessPacket( data, (int)size, remoteEndpoint );
 						if( break_ )
 							break;
 					}
