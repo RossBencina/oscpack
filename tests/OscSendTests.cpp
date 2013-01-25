@@ -66,19 +66,22 @@ void RunSendTests( const IpEndpointName& host )
             << true << 23 << (float)3.1415 << "hello" << osc::EndMessage;
     socket.Send( p.Data(), p.Size() );
 
-    // test1 message with too few arguments
+    std::cout << "NOTE: sending /test1 message with too few arguments\n"\
+                    "(expect an exception if receiving with OscReceiveTest)\n\n";
     p.Clear();
     p << osc::BeginMessage( "/test1" )
             << true << osc::EndMessage;
     socket.Send( p.Data(), p.Size() );
 
-    // test1 message with too many arguments
+    std::cout << "NOTE: sending /test1 message with too many arguments\n"\
+                    "(expect an exception if receiving with OscReceiveTest)\n\n";
     p.Clear();
     p << osc::BeginMessage( "/test1" )
             << true << 23 << (float)3.1415 << "hello" << 42 << osc::EndMessage;
     socket.Send( p.Data(), p.Size() );
 
-    // test1 message with wrong argument type
+    std::cout << "NOTE: sending /test1 message with wrong argument type\n"\
+                    "(expect an exception if receiving with OscReceiveTest)\n\n";
     p.Clear();
     p << osc::BeginMessage( "/test1" )
             << true << 1.0 << (float)3.1415 << "hello" << osc::EndMessage;
@@ -219,7 +222,7 @@ int main(int argc, char* argv[])
 	host.AddressAsString( hostIpAddress );
 
     std::cout << "sending test messages to " << hostName 
-		<< " (" << hostIpAddress << ") on port " << port << "...\n";
+		<< " (" << hostIpAddress << ") on port " << port << "...\n\n";
 
     osc::RunSendTests( host );
 }
