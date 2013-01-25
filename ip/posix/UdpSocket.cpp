@@ -210,14 +210,14 @@ public:
 
 	bool IsBound() const { return isBound_; }
 
-    int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
+    std::size_t ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 	{
 		assert( isBound_ );
 
 		struct sockaddr_in fromAddr;
         socklen_t fromAddrLen = sizeof(fromAddr);
              	 
-        int result = recvfrom(socket_, data, size, 0,
+        ssize_t result = recvfrom(socket_, data, size, 0,
                     (struct sockaddr *) &fromAddr, (socklen_t*)&fromAddrLen);
 		if( result < 0 )
 			return 0;
@@ -225,7 +225,7 @@ public:
 		remoteEndpoint.address = ntohl(fromAddr.sin_addr.s_addr);
 		remoteEndpoint.port = ntohs(fromAddr.sin_port);
 
-		return result;
+		return (std::size_t)result;
 	}
 
 	int Socket() { return socket_; }
@@ -271,7 +271,7 @@ bool UdpSocket::IsBound() const
 	return impl_->IsBound();
 }
 
-int UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
+std::size_t UdpSocket::ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size )
 {
 	return impl_->ReceiveFrom( remoteEndpoint, data, size );
 }
@@ -448,9 +448,9 @@ public:
 
 				if( FD_ISSET( i->second->impl_->Socket(), &tempfds ) ){
 
-					int size = i->second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
+					std::size_t size = i->second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
 					if( size > 0 ){
-						i->first->ProcessPacket( data, size, remoteEndpoint );
+						i->first->ProcessPacket( data, (int)size, remoteEndpoint );
 						if( break_ )
 							break;
 					}

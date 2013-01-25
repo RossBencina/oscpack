@@ -111,7 +111,7 @@ public:
 	void Bind( const IpEndpointName& localEndpoint );
 	bool IsBound() const;
 
-	int ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size );
+    std::size_t ReceiveFrom( IpEndpointName& remoteEndpoint, char *data, std::size_t size );
 };
 
 
