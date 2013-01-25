@@ -107,8 +107,8 @@ private:
 
 class ReceivedBundleElement{
 public:
-    ReceivedBundleElement( const char *size )
-        : size_( size ) {}
+    ReceivedBundleElement( const char *sizePtr )
+        : sizePtr_( sizePtr ) {}
 
     friend class ReceivedBundleElementIterator;
 
@@ -116,10 +116,10 @@ public:
     bool IsBundle() const;
 
     int32 Size() const;
-    const char *Contents() const { return size_ + 4; }
+    const char *Contents() const { return sizePtr_ + 4; }
 
 private:
-    const char *size_;
+    const char *sizePtr_;
 };
 
 
@@ -151,11 +151,11 @@ public:
 private:
 	ReceivedBundleElement value_;
 
-	void Advance() { value_.size_ = value_.Contents() + value_.Size(); }
+	void Advance() { value_.sizePtr_ = value_.Contents() + value_.Size(); }
 
     bool IsEqualTo( const ReceivedBundleElementIterator& rhs ) const
     {
-        return value_.size_ == rhs.value_.size_;
+        return value_.sizePtr_ == rhs.value_.sizePtr_;
     }
 };
 
@@ -174,73 +174,73 @@ inline bool operator!=(const ReceivedBundleElementIterator& lhs,
 
 class ReceivedMessageArgument{
 public:
-	ReceivedMessageArgument( const char *typeTag, const char *argument )
-		: typeTag_( typeTag )
-		, argument_( argument ) {}
+	ReceivedMessageArgument( const char *typeTagPtr, const char *argumentPtr )
+		: typeTagPtr_( typeTagPtr )
+		, argumentPtr_( argumentPtr ) {}
 
     friend class ReceivedMessageArgumentIterator;
     
-	char TypeTag() const { return *typeTag_; }
+	char TypeTag() const { return *typeTagPtr_; }
 
     // the unchecked methods below don't check whether the argument actually
     // is of the specified type. they should only be used if you've already
     // checked the type tag or the associated IsType() method.
 
     bool IsBool() const
-        { return *typeTag_ == TRUE_TYPE_TAG || *typeTag_ == FALSE_TYPE_TAG; }
+        { return *typeTagPtr_ == TRUE_TYPE_TAG || *typeTagPtr_ == FALSE_TYPE_TAG; }
     bool AsBool() const;
     bool AsBoolUnchecked() const;
 
-    bool IsNil() const { return *typeTag_ == NIL_TYPE_TAG; }
-    bool IsInfinitum() const { return *typeTag_ == INFINITUM_TYPE_TAG; }
+    bool IsNil() const { return *typeTagPtr_ == NIL_TYPE_TAG; }
+    bool IsInfinitum() const { return *typeTagPtr_ == INFINITUM_TYPE_TAG; }
 
-    bool IsInt32() const { return *typeTag_ == INT32_TYPE_TAG; }
+    bool IsInt32() const { return *typeTagPtr_ == INT32_TYPE_TAG; }
     int32 AsInt32() const;
     int32 AsInt32Unchecked() const;
 
-    bool IsFloat() const { return *typeTag_ == FLOAT_TYPE_TAG; }
+    bool IsFloat() const { return *typeTagPtr_ == FLOAT_TYPE_TAG; }
     float AsFloat() const;
     float AsFloatUnchecked() const;
 
-    bool IsChar() const { return *typeTag_ == CHAR_TYPE_TAG; }
+    bool IsChar() const { return *typeTagPtr_ == CHAR_TYPE_TAG; }
     char AsChar() const;
     char AsCharUnchecked() const;
 
-    bool IsRgbaColor() const { return *typeTag_ == RGBA_COLOR_TYPE_TAG; }
+    bool IsRgbaColor() const { return *typeTagPtr_ == RGBA_COLOR_TYPE_TAG; }
     uint32 AsRgbaColor() const;
     uint32 AsRgbaColorUnchecked() const;
 
-    bool IsMidiMessage() const { return *typeTag_ == MIDI_MESSAGE_TYPE_TAG; }
+    bool IsMidiMessage() const { return *typeTagPtr_ == MIDI_MESSAGE_TYPE_TAG; }
     uint32 AsMidiMessage() const;
     uint32 AsMidiMessageUnchecked() const;
 
-    bool IsInt64() const { return *typeTag_ == INT64_TYPE_TAG; }
+    bool IsInt64() const { return *typeTagPtr_ == INT64_TYPE_TAG; }
     int64 AsInt64() const;
     int64 AsInt64Unchecked() const;
 
-    bool IsTimeTag() const { return *typeTag_ == TIME_TAG_TYPE_TAG; }
+    bool IsTimeTag() const { return *typeTagPtr_ == TIME_TAG_TYPE_TAG; }
     uint64 AsTimeTag() const;
     uint64 AsTimeTagUnchecked() const;
 
-    bool IsDouble() const { return *typeTag_ == DOUBLE_TYPE_TAG; }
+    bool IsDouble() const { return *typeTagPtr_ == DOUBLE_TYPE_TAG; }
     double AsDouble() const;
     double AsDoubleUnchecked() const;
 
-    bool IsString() const { return *typeTag_ == STRING_TYPE_TAG; }
+    bool IsString() const { return *typeTagPtr_ == STRING_TYPE_TAG; }
     const char* AsString() const;
-    const char* AsStringUnchecked() const { return argument_; }
+    const char* AsStringUnchecked() const { return argumentPtr_; }
 
-    bool IsSymbol() const { return *typeTag_ == SYMBOL_TYPE_TAG; }
+    bool IsSymbol() const { return *typeTagPtr_ == SYMBOL_TYPE_TAG; }
     const char* AsSymbol() const;
-    const char* AsSymbolUnchecked() const { return argument_; }
+    const char* AsSymbolUnchecked() const { return argumentPtr_; }
 
-    bool IsBlob() const { return *typeTag_ == BLOB_TYPE_TAG; }
+    bool IsBlob() const { return *typeTagPtr_ == BLOB_TYPE_TAG; }
     void AsBlob( const void*& data, unsigned long& size ) const;
     void AsBlobUnchecked( const void*& data, unsigned long& size ) const;
     
 private:
-	const char *typeTag_;
-	const char *argument_;
+	const char *typeTagPtr_;
+	const char *argumentPtr_;
 };
 
 
@@ -276,7 +276,7 @@ private:
 
     bool IsEqualTo( const ReceivedMessageArgumentIterator& rhs ) const
     {
-        return value_.typeTag_ == rhs.value_.typeTag_;
+        return value_.typeTagPtr_ == rhs.value_.typeTagPtr_;
     }
 };
 
@@ -438,7 +438,7 @@ public:
 
 	const char *AddressPattern() const { return addressPattern_; }
 
-	// Support for non-standad SuperCollider integer address patterns:
+	// Support for non-standard SuperCollider integer address patterns:
 	bool AddressPatternIsUInt32() const;
 	uint32 AddressPatternAsUInt32() const;
 

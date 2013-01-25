@@ -196,18 +196,18 @@ bool ReceivedBundleElement::IsBundle() const
 
 int32 ReceivedBundleElement::Size() const
 {
-    return ToUInt32( size_ );
+    return ToUInt32( sizePtr_ );
 }
 
 //------------------------------------------------------------------------------
 
 bool ReceivedMessageArgument::AsBool() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == TRUE_TYPE_TAG )
+	else if( *typeTagPtr_ == TRUE_TYPE_TAG )
 		return true;
-	else if( *typeTag_ == FALSE_TYPE_TAG )
+	else if( *typeTagPtr_ == FALSE_TYPE_TAG )
 		return false;
 	else
 		throw WrongArgumentTypeException();
@@ -216,9 +216,9 @@ bool ReceivedMessageArgument::AsBool() const
 
 bool ReceivedMessageArgument::AsBoolUnchecked() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == TRUE_TYPE_TAG )
+	else if( *typeTagPtr_ == TRUE_TYPE_TAG )
 		return true;
     else
 	    return false;
@@ -227,9 +227,9 @@ bool ReceivedMessageArgument::AsBoolUnchecked() const
 
 int32 ReceivedMessageArgument::AsInt32() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == INT32_TYPE_TAG )
+	else if( *typeTagPtr_ == INT32_TYPE_TAG )
 		return AsInt32Unchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -244,10 +244,10 @@ int32 ReceivedMessageArgument::AsInt32Unchecked() const
         char c[4];
     } u;
 
-    u.c[0] = argument_[3];
-    u.c[1] = argument_[2];
-    u.c[2] = argument_[1];
-    u.c[3] = argument_[0];
+    u.c[0] = argumentPtr_[3];
+    u.c[1] = argumentPtr_[2];
+    u.c[2] = argumentPtr_[1];
+    u.c[3] = argumentPtr_[0];
 
     return u.i;
 #else
@@ -258,9 +258,9 @@ int32 ReceivedMessageArgument::AsInt32Unchecked() const
 
 float ReceivedMessageArgument::AsFloat() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == FLOAT_TYPE_TAG )
+	else if( *typeTagPtr_ == FLOAT_TYPE_TAG )
 		return AsFloatUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -275,10 +275,10 @@ float ReceivedMessageArgument::AsFloatUnchecked() const
         char c[4];
     } u;
 
-    u.c[0] = argument_[3];
-    u.c[1] = argument_[2];
-    u.c[2] = argument_[1];
-    u.c[3] = argument_[0];
+    u.c[0] = argumentPtr_[3];
+    u.c[1] = argumentPtr_[2];
+    u.c[2] = argumentPtr_[1];
+    u.c[3] = argumentPtr_[0];
 
     return u.f;
 #else
@@ -289,9 +289,9 @@ float ReceivedMessageArgument::AsFloatUnchecked() const
 
 char ReceivedMessageArgument::AsChar() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == CHAR_TYPE_TAG )
+	else if( *typeTagPtr_ == CHAR_TYPE_TAG )
 		return AsCharUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -300,15 +300,15 @@ char ReceivedMessageArgument::AsChar() const
 
 char ReceivedMessageArgument::AsCharUnchecked() const
 {
-    return (char)ToInt32( argument_ );
+    return (char)ToInt32( argumentPtr_ );
 }
 
 
 uint32 ReceivedMessageArgument::AsRgbaColor() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == RGBA_COLOR_TYPE_TAG )
+	else if( *typeTagPtr_ == RGBA_COLOR_TYPE_TAG )
 		return AsRgbaColorUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -317,15 +317,15 @@ uint32 ReceivedMessageArgument::AsRgbaColor() const
 
 uint32 ReceivedMessageArgument::AsRgbaColorUnchecked() const
 {
-	return ToUInt32( argument_ );
+	return ToUInt32( argumentPtr_ );
 }
 
 
 uint32 ReceivedMessageArgument::AsMidiMessage() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == MIDI_MESSAGE_TYPE_TAG )
+	else if( *typeTagPtr_ == MIDI_MESSAGE_TYPE_TAG )
 		return AsMidiMessageUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -334,15 +334,15 @@ uint32 ReceivedMessageArgument::AsMidiMessage() const
 
 uint32 ReceivedMessageArgument::AsMidiMessageUnchecked() const
 {
-	return ToUInt32( argument_ );
+	return ToUInt32( argumentPtr_ );
 }
 
 
 int64 ReceivedMessageArgument::AsInt64() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == INT64_TYPE_TAG )
+	else if( *typeTagPtr_ == INT64_TYPE_TAG )
 		return AsInt64Unchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -351,15 +351,15 @@ int64 ReceivedMessageArgument::AsInt64() const
 
 int64 ReceivedMessageArgument::AsInt64Unchecked() const
 {
-    return ToInt64( argument_ );
+    return ToInt64( argumentPtr_ );
 }
 
 
 uint64 ReceivedMessageArgument::AsTimeTag() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == TIME_TAG_TYPE_TAG )
+	else if( *typeTagPtr_ == TIME_TAG_TYPE_TAG )
 		return AsTimeTagUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -368,15 +368,15 @@ uint64 ReceivedMessageArgument::AsTimeTag() const
 
 uint64 ReceivedMessageArgument::AsTimeTagUnchecked() const
 {
-    return ToUInt64( argument_ );
+    return ToUInt64( argumentPtr_ );
 }
 
 
 double ReceivedMessageArgument::AsDouble() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == DOUBLE_TYPE_TAG )
+	else if( *typeTagPtr_ == DOUBLE_TYPE_TAG )
 		return AsDoubleUnchecked();
 	else
 		throw WrongArgumentTypeException();
@@ -391,14 +391,14 @@ double ReceivedMessageArgument::AsDoubleUnchecked() const
         char c[8];
     } u;
 
-    u.c[0] = argument_[7];
-    u.c[1] = argument_[6];
-    u.c[2] = argument_[5];
-    u.c[3] = argument_[4];
-    u.c[4] = argument_[3];
-    u.c[5] = argument_[2];
-    u.c[6] = argument_[1];
-    u.c[7] = argument_[0];
+    u.c[0] = argumentPtr_[7];
+    u.c[1] = argumentPtr_[6];
+    u.c[2] = argumentPtr_[5];
+    u.c[3] = argumentPtr_[4];
+    u.c[4] = argumentPtr_[3];
+    u.c[5] = argumentPtr_[2];
+    u.c[6] = argumentPtr_[1];
+    u.c[7] = argumentPtr_[0];
 
     return u.d;
 #else
@@ -409,10 +409,10 @@ double ReceivedMessageArgument::AsDoubleUnchecked() const
 
 const char* ReceivedMessageArgument::AsString() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == STRING_TYPE_TAG )
-		return argument_;
+	else if( *typeTagPtr_ == STRING_TYPE_TAG )
+		return argumentPtr_;
 	else
 		throw WrongArgumentTypeException();
 }
@@ -420,10 +420,10 @@ const char* ReceivedMessageArgument::AsString() const
 
 const char* ReceivedMessageArgument::AsSymbol() const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == SYMBOL_TYPE_TAG )
-		return argument_;
+	else if( *typeTagPtr_ == SYMBOL_TYPE_TAG )
+		return argumentPtr_;
 	else
 		throw WrongArgumentTypeException();
 }
@@ -431,9 +431,9 @@ const char* ReceivedMessageArgument::AsSymbol() const
 
 void ReceivedMessageArgument::AsBlob( const void*& data, unsigned long& size ) const
 {
-    if( !typeTag_ )
+    if( !typeTagPtr_ )
         throw MissingArgumentException();
-	else if( *typeTag_ == BLOB_TYPE_TAG )
+	else if( *typeTagPtr_ == BLOB_TYPE_TAG )
 		AsBlobUnchecked( data, size );
 	else
 		throw WrongArgumentTypeException();
@@ -442,21 +442,21 @@ void ReceivedMessageArgument::AsBlob( const void*& data, unsigned long& size ) c
 
 void ReceivedMessageArgument::AsBlobUnchecked( const void*& data, unsigned long& size ) const
 {
-    size = ToUInt32( argument_ );
-	data = (void*)(argument_+4);
+    size = ToUInt32( argumentPtr_ );
+	data = (void*)(argumentPtr_+4);
 }
 
 //------------------------------------------------------------------------------
 
 void ReceivedMessageArgumentIterator::Advance()
 {
-    if( !value_.typeTag_ )
+    if( !value_.typeTagPtr_ )
         return;
         
-    switch( *value_.typeTag_++ ){
+    switch( *value_.typeTagPtr_++ ){
         case '\0':
             // don't advance past end
-            --value_.typeTag_;
+            --value_.typeTagPtr_;
             break;
             
         case TRUE_TYPE_TAG:
@@ -473,14 +473,14 @@ void ReceivedMessageArgumentIterator::Advance()
         case RGBA_COLOR_TYPE_TAG:
         case MIDI_MESSAGE_TYPE_TAG:
 
-            value_.argument_ += 4;
+            value_.argumentPtr_ += 4;
             break;
 
         case INT64_TYPE_TAG:
         case TIME_TAG_TYPE_TAG:
         case DOUBLE_TYPE_TAG:
 				
-            value_.argument_ += 8;
+            value_.argumentPtr_ += 8;
             break;
 
         case STRING_TYPE_TAG: 
@@ -490,19 +490,19 @@ void ReceivedMessageArgumentIterator::Advance()
             // the arguments have already been validated in
             // ReceivedMessage::Init() below.
             
-            value_.argument_ = FindStr4End( value_.argument_ );
+            value_.argumentPtr_ = FindStr4End( value_.argumentPtr_ );
             break;
 
         case BLOB_TYPE_TAG:
             {
-                uint32 blobSize = ToUInt32( value_.argument_ );
-                value_.argument_ = value_.argument_ + 4 + RoundUp4( (unsigned long)blobSize );
+                uint32 blobSize = ToUInt32( value_.argumentPtr_ );
+                value_.argumentPtr_ = value_.argumentPtr_ + 4 + RoundUp4( (unsigned long)blobSize );
             }
             break;
 
         default:    // unknown type tag
             // don't advance
-            --value_.typeTag_;
+            --value_.typeTagPtr_;
             break;
             
 
