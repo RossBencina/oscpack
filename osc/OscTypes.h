@@ -74,6 +74,41 @@ typedef unsigned long uint32;
 #endif
 
 
+enum ValueTypeSizes{
+    OSC_SIZEOF_INT32 = 4,
+    OSC_SIZEOF_UINT32 = 4,
+    OSC_SIZEOF_INT64 = 8,
+    OSC_SIZEOF_UINT64 = 8,
+};
+
+
+// osc_bundle_element_size_t is used for the size of bundle elements and blobs
+// the OSC spec specifies these as int32 (signed) but we ensure that they 
+// are always positive since negative field sizes make no sense.
+
+typedef int32 osc_bundle_element_size_t;
+
+enum {
+    OSC_INT32_MAX = 0x7FFFFFFF,
+
+    // Element sizes are specified to be int32, and are always rounded up to nearest 
+    // multiple of 4. Therefore their values can't be greater than 0x7FFFFFFC.
+    OSC_BUNDLE_ELEMENT_SIZE_MAX = 0x7FFFFFFC
+};
+
+
+inline bool IsValidElementSizeValue( osc_bundle_element_size_t x )
+{
+    // sizes may not be negative or exceed OSC_BUNDLE_ELEMENT_SIZE_MAX
+    return x >= 0 && x <= OSC_BUNDLE_ELEMENT_SIZE_MAX; 
+}
+
+
+inline bool IsMultipleOf4( osc_bundle_element_size_t x )
+{
+    return (x & ((osc_bundle_element_size_t)0x03)) == 0;
+}
+
 
 enum TypeTagValues {
     TRUE_TYPE_TAG = 'T',
@@ -181,10 +216,10 @@ struct Symbol{
 
 struct Blob{
     Blob() {}
-    explicit Blob( const void* data_, unsigned long size_ )
+    explicit Blob( const void* data_, osc_bundle_element_size_t size_ )
             : data( data_ ), size( size_ ) {}
     const void* data;
-    unsigned long size;
+    osc_bundle_element_size_t size;
 };
 
 } // namespace osc

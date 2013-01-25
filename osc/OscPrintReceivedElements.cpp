@@ -152,12 +152,12 @@ std::ostream& operator<<( std::ostream & os,
 
         case BLOB_TYPE_TAG:
             {
-                unsigned long size;
                 const void *data;
+                osc_bundle_element_size_t size;
                 arg.AsBlobUnchecked( data, size );
                 os << "OSC-blob:<<" << std::hex << std::setfill('0');
                 unsigned char *p = (unsigned char*)data;
-                for( unsigned long i = 0; i < size; ++i ){
+                for( osc_bundle_element_size_t i = 0; i < size; ++i ){
                     os << "0x" << std::setw(2) << int(p[i]);
                     if( i != size-1 )
                         os << ' ';

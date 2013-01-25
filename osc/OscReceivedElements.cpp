@@ -38,6 +38,7 @@
 
 #include "OscHostEndianness.h"
 
+#include <cstddef> // ptrdiff_t
 
 namespace osc{
 
@@ -82,13 +83,10 @@ static inline const char* FindStr4End( const char *p, const char *end )
 }
 
 
-static inline unsigned long RoundUp4( unsigned long x )
+// round up to the next highest multiple of 4. unless x is already a multiple of 4
+static inline uint32 RoundUp4( uint32 x ) 
 {
-    unsigned long remainder = x & 0x3UL;
-    if( remainder )
-        return x + (4 - remainder);
-    else
-        return x;
+    return (x + 3) & ~((uint32)0x03);
 }
 
 
@@ -194,9 +192,9 @@ bool ReceivedBundleElement::IsBundle() const
 }
 
 
-int32 ReceivedBundleElement::Size() const
+osc_bundle_element_size_t ReceivedBundleElement::Size() const
 {
-    return ToUInt32( sizePtr_ );
+    return ToInt32( sizePtr_ );
 }
 
 //------------------------------------------------------------------------------
@@ -429,7 +427,7 @@ const char* ReceivedMessageArgument::AsSymbol() const
 }
 
 
-void ReceivedMessageArgument::AsBlob( const void*& data, unsigned long& size ) const
+void ReceivedMessageArgument::AsBlob( const void*& data, osc_bundle_element_size_t& size ) const
 {
     if( !typeTagPtr_ )
         throw MissingArgumentException();
@@ -440,10 +438,15 @@ void ReceivedMessageArgument::AsBlob( const void*& data, unsigned long& size ) c
 }
 
 
-void ReceivedMessageArgument::AsBlobUnchecked( const void*& data, unsigned long& size ) const
+void ReceivedMessageArgument::AsBlobUnchecked( const void*& data, osc_bundle_element_size_t& size ) const
 {
-    size = ToUInt32( argumentPtr_ );
-	data = (void*)(argumentPtr_+4);
+    // read blob size as an unsigned int then validate
+    osc_bundle_element_size_t sizeResult = (osc_bundle_element_size_t)ToUInt32( argumentPtr_ );
+    if( !IsValidElementSizeValue(sizeResult) )
+        throw MalformedMessageException("invalid blob size");
+
+    size = sizeResult;
+	data = (void*)(argumentPtr_+ osc::OSC_SIZEOF_INT32);
 }
 
 //------------------------------------------------------------------------------
@@ -495,8 +498,9 @@ void ReceivedMessageArgumentIterator::Advance()
 
         case BLOB_TYPE_TAG:
             {
+                // treat blob size as an unsigned int for the purposes of this calculation
                 uint32 blobSize = ToUInt32( value_.argumentPtr_ );
-                value_.argumentPtr_ = value_.argumentPtr_ + 4 + RoundUp4( (unsigned long)blobSize );
+                value_.argumentPtr_ = value_.argumentPtr_ + osc::OSC_SIZEOF_INT32 + RoundUp4( blobSize );
             }
             break;
 
@@ -541,12 +545,15 @@ uint32 ReceivedMessage::AddressPatternAsUInt32() const
 }
 
 
-void ReceivedMessage::Init( const char *message, unsigned long size )
+void ReceivedMessage::Init( const char *message, osc_bundle_element_size_t size )
 {
+    if( !IsValidElementSizeValue(size) )
+        throw MalformedMessageException( "invalid message size" );
+
     if( size == 0 )
         throw MalformedMessageException( "zero length messages not permitted" );
 
-    if( (size & 0x03L) != 0 )
+    if( !IsMultipleOf4(size) )
         throw MalformedMessageException( "message size must be multiple of four" );
 
     const char *end = message + size;
@@ -632,11 +639,12 @@ void ReceivedMessage::Init( const char *message, unsigned long size )
 
                     case BLOB_TYPE_TAG:
                         {
-                            if( argument + 4 > end )
+                            if( argument + osc::OSC_SIZEOF_INT32 > end )
                                 MalformedMessageException( "arguments exceed message size" );
                                 
+                            // treat blob size as an unsigned int for the purposes of this calculation
                             uint32 blobSize = ToUInt32( argument );
-                            argument = argument + 4 + RoundUp4( (unsigned long)blobSize );
+                            argument = argument + osc::OSC_SIZEOF_INT32 + RoundUp4( blobSize );
                             if( argument > end )
                                 MalformedMessageException( "arguments exceed message size" );
                         }
@@ -654,6 +662,14 @@ void ReceivedMessage::Init( const char *message, unsigned long size )
             }while( *++typeTag != '\0' );
             typeTagsEnd_ = typeTag;
         }
+
+        // These invariants should be guaranteed by the above code.
+        // we depend on them in the implementation of ArgumentCount()
+#ifndef NDEBUG
+        std::ptrdiff_t argumentCount = typeTagsEnd_ - typeTagsBegin_;
+        assert( argumentCount >= 0 );
+        assert( argumentCount <= OSC_INT32_MAX );
+#endif
     }
 }
 
@@ -673,12 +689,16 @@ ReceivedBundle::ReceivedBundle( const ReceivedBundleElement& bundleElement )
 }
 
 
-void ReceivedBundle::Init( const char *bundle, unsigned long size )
+void ReceivedBundle::Init( const char *bundle, osc_bundle_element_size_t size )
 {
+
+    if( !IsValidElementSizeValue(size) )
+        throw MalformedBundleException( "invalid bundle size" );
+
     if( size < 16 )
         throw MalformedBundleException( "packet too short for bundle" );
 
-    if( (size & 0x03L) != 0 )
+    if( !IsMultipleOf4(size) )
         throw MalformedBundleException( "bundle size must be multiple of four" );
 
     if( bundle[0] != '#'
@@ -698,14 +718,15 @@ void ReceivedBundle::Init( const char *bundle, unsigned long size )
     const char *p = timeTag_ + 8;
         
     while( p < end_ ){
-        if( p + 4 > end_ )
+        if( p + osc::OSC_SIZEOF_INT32 > end_ )
             throw MalformedBundleException( "packet too short for elementSize" );
 
+        // treat element size as an unsigned int for the purposes of this calculation
         uint32 elementSize = ToUInt32( p );
-        if( (elementSize & 0x03L) != 0 )
+        if( (elementSize & ((uint32)0x03)) != 0 )
             throw MalformedBundleException( "bundle element size must be multiple of four" );
 
-        p += 4 + elementSize;
+        p += osc::OSC_SIZEOF_INT32 + elementSize;
         if( p > end_ )
             throw MalformedBundleException( "packet too short for bundle element" );
 

@@ -48,6 +48,12 @@
 namespace osc{
 
 
+class MalformedPacketException : public Exception{
+public:
+    MalformedPacketException( const char *w="malformed packet" )
+        : Exception( w ) {}
+};
+
 class MalformedMessageException : public Exception{
 public:
     MalformedMessageException( const char *w="malformed message" )
@@ -81,9 +87,36 @@ public:
 
 class ReceivedPacket{
 public:
+    // Although the OSC spec is not entirely clear on this, we only support
+    // packets up to 0x7FFFFFFC bytes long (the maximum 4-byte aligned value
+    // representable by an int32). An exception will be raised if you pass a 
+    // larger value to the ReceivedPacket() constructor.
+
+    ReceivedPacket( const char *contents, osc_bundle_element_size_t size )
+        : contents_( contents )
+        , size_( ValidateSize(size) ) {}
+
     ReceivedPacket( const char *contents, std::size_t size )
         : contents_( contents )
-        , size_( (int32)size )
+        , size_( ValidateSize( (osc_bundle_element_size_t)size ) ) {}
+
+#if !(defined(__x86_64__) || defined(_M_X64))
+    ReceivedPacket( const char *contents, int size )
+        : contents_( contents )
+        , size_( ValidateSize( (osc_bundle_element_size_t)size ) ) {}
+#endif
+
+    bool IsMessage() const { return !IsBundle(); }
+    bool IsBundle() const;
+
+    osc_bundle_element_size_t Size() const { return size_; }
+    const char *Contents() const { return contents_; }
+
+private:
+    const char *contents_;
+    osc_bundle_element_size_t size_;
+
+    static osc_bundle_element_size_t ValidateSize( osc_bundle_element_size_t size )
     {
         // sanity check integer types declared in OscTypes.h 
         // you'll need to fix OscTypes.h if any of these asserts fail
@@ -91,17 +124,18 @@ public:
         assert( sizeof(osc::uint32) == 4 );
         assert( sizeof(osc::int64) == 8 );
         assert( sizeof(osc::uint64) == 8 );
+
+        if( !IsValidElementSizeValue(size) )
+            throw MalformedPacketException( "invalid packet size" );
+
+        if( size == 0 )
+            throw MalformedPacketException( "zero length elements not permitted" );
+
+        if( !IsMultipleOf4(size) )
+            throw MalformedPacketException( "element size must be multiple of four" );
+
+        return size;
     }
-
-    bool IsMessage() const { return !IsBundle(); }
-    bool IsBundle() const;
-
-    int32 Size() const { return size_; }
-    const char *Contents() const { return contents_; }
-
-private:
-    const char *contents_;
-    int32 size_; // keep as int32 (not size_t) to leave structure layout intact
 };
 
 
@@ -115,8 +149,8 @@ public:
     bool IsMessage() const { return !IsBundle(); }
     bool IsBundle() const;
 
-    int32 Size() const;
-    const char *Contents() const { return sizePtr_ + 4; }
+    osc_bundle_element_size_t Size() const;
+    const char *Contents() const { return sizePtr_ + osc::OSC_SIZEOF_INT32; }
 
 private:
     const char *sizePtr_;
@@ -235,8 +269,8 @@ public:
     const char* AsSymbolUnchecked() const { return argumentPtr_; }
 
     bool IsBlob() const { return *typeTagPtr_ == BLOB_TYPE_TAG; }
-    void AsBlob( const void*& data, unsigned long& size ) const;
-    void AsBlobUnchecked( const void*& data, unsigned long& size ) const;
+    void AsBlob( const void*& data, osc_bundle_element_size_t& size ) const;
+    void AsBlobUnchecked( const void*& data, osc_bundle_element_size_t& size ) const;
     
 private:
 	const char *typeTagPtr_;
@@ -431,7 +465,7 @@ public:
 
 
 class ReceivedMessage{
-    void Init( const char *bundle, unsigned long size );
+    void Init( const char *bundle, osc_bundle_element_size_t size );
 public:
     explicit ReceivedMessage( const ReceivedPacket& packet );
     explicit ReceivedMessage( const ReceivedBundleElement& bundleElement );
@@ -442,7 +476,7 @@ public:
 	bool AddressPatternIsUInt32() const;
 	uint32 AddressPatternAsUInt32() const;
 
-	unsigned long ArgumentCount() const { return static_cast<unsigned long>(typeTagsEnd_ - typeTagsBegin_); }
+	uint32 ArgumentCount() const { return static_cast<uint32>(typeTagsEnd_ - typeTagsBegin_); }
 
     const char *TypeTags() const { return typeTagsBegin_; }
 
@@ -473,14 +507,14 @@ private:
 
 
 class ReceivedBundle{
-    void Init( const char *message, unsigned long size );
+    void Init( const char *message, osc_bundle_element_size_t size );
 public:
     explicit ReceivedBundle( const ReceivedPacket& packet );
     explicit ReceivedBundle( const ReceivedBundleElement& bundleElement );
 
     uint64 TimeTag() const;
 
-    unsigned long ElementCount() const { return elementCount_; }
+    uint32 ElementCount() const { return elementCount_; }
 
     typedef ReceivedBundleElementIterator const_iterator;
     
@@ -497,7 +531,7 @@ public:
 private:
     const char *timeTag_;
     const char *end_;
-    unsigned long elementCount_;
+    uint32 elementCount_;
 };
 
 
