@@ -180,7 +180,7 @@ public:
 
     friend class ReceivedMessageArgumentIterator;
     
-	const char TypeTag() const { return *typeTag_; }
+	char TypeTag() const { return *typeTag_; }
 
     // the unchecked methods below don't check whether the argument actually
     // is of the specified type. they should only be used if you've already
