@@ -70,6 +70,32 @@
 
 #endif
 
+#else
+
+// gcc defines __LITTLE_ENDIAN__ and __BIG_ENDIAN__
+// for others used here see http://sourceforge.net/p/predef/wiki/Endianness/
+#if (defined(__LITTLE_ENDIAN__) && !defined(__BIG_ENDIAN__)) \
+    || (defined(__ARMEL__) && !defined(__ARMEB__)) \
+    || (defined(__AARCH64EL__) && !defined(__AARCH64EB__)) \
+    || (defined(_MIPSEL) && !defined(_MIPSEB)) \
+    || (defined(__MIPSEL) && !defined(__MIPSEB)) \
+    || (defined(__MIPSEL__) && !defined(__MIPSEB__))
+
+#define OSC_HOST_LITTLE_ENDIAN 1
+#undef OSC_HOST_BIG_ENDIAN
+
+#elif (defined(__BIG_ENDIAN__) && !defined(__LITTLE_ENDIAN__)) \
+    || (defined(__ARMEB__) && !defined(__ARMEL__)) \
+    || (defined(__AARCH64EB__) && !defined(__AARCH64EL__)) \
+    || (defined(_MIPSEB) && !defined(_MIPSEL)) \
+    || (defined(__MIPSEB) && !defined(__MIPSEL)) \
+    || (defined(__MIPSEB__) && !defined(__MIPSEL__))
+
+#define OSC_HOST_BIG_ENDIAN 1
+#undef OSC_HOST_LITTLE_ENDIAN
+
+#endif
+
 #endif
 
 #if !defined(OSC_HOST_LITTLE_ENDIAN) && !defined(OSC_HOST_BIG_ENDIAN)
