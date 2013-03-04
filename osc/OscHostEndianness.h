@@ -69,6 +69,22 @@
 
 #endif
 
+#elif defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__)
+
+// should cover gcc and clang
+
+#if (__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__)
+
+#define OSC_HOST_LITTLE_ENDIAN 1
+#undef OSC_HOST_BIG_ENDIAN
+
+#elif (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+
+#define OSC_HOST_BIG_ENDIAN 1
+#undef OSC_HOST_LITTLE_ENDIAN
+
+#endif
+
 #else
 
 // gcc defines __LITTLE_ENDIAN__ and __BIG_ENDIAN__
