@@ -121,6 +121,22 @@ public:
 		if (socket_ != INVALID_SOCKET) closesocket(socket_);
 	}
 
+	void SetEnableBroadcast( bool enableBroadcast )
+	{
+		char broadcast = (enableBroadcast) ? 1 : 0; // char on win32
+		setsockopt(socket_, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+	}
+
+	void SetAllowReuse( bool allowReuse )
+	{
+		// Note: XXX is non-deterministic for listening sockets on Win32. See MSDN article:
+		// "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE"
+		// http://msdn.microsoft.com/en-us/library/ms740621%28VS.85%29.aspx
+
+		char reuseAddr = (allowReuse) ? 1 : 0; // char on win32
+		setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr));
+	}
+
 	IpEndpointName LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const
 	{
 		assert( isBound_ );
@@ -234,6 +250,16 @@ UdpSocket::UdpSocket()
 UdpSocket::~UdpSocket()
 {
 	delete impl_;
+}
+
+void UdpSocket::SetEnableBroadcast( bool enableBroadcast )
+{
+    impl_->SetEnableBroadcast( enableBroadcast );
+}
+
+void UdpSocket::SetAllowReuse( bool allowReuse )
+{
+    impl_->SetAllowReuse( allowReuse );
 }
 
 IpEndpointName UdpSocket::LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const

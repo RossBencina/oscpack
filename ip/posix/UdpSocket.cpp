@@ -125,6 +125,24 @@ public:
 		if (socket_ != -1) close(socket_);
 	}
 
+	void SetEnableBroadcast( bool enableBroadcast )
+	{
+		int broadcast = (enableBroadcast) ? 1 : 0; // int on posix
+		setsockopt(socket_, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
+	}
+
+	void SetAllowReuse( bool allowReuse )
+	{
+		int reuseAddr = (allowReuse) ? 1 : 0; // int on posix
+		setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr));
+
+#ifdef __APPLE__
+		// needed also for OS X - enable multiple listeners for a single port on same network interface
+		int reusePort = (allowReuse) ? 1 : 0; // int on posix
+		setsockopt(socket_, SOL_SOCKET, SO_REUSEPORT, &reusePort, sizeof(reusePort));
+#endif
+	}
+
 	IpEndpointName LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const
 	{
 		assert( isBound_ );
@@ -239,6 +257,16 @@ UdpSocket::UdpSocket()
 UdpSocket::~UdpSocket()
 {
 	delete impl_;
+}
+
+void UdpSocket::SetEnableBroadcast( bool enableBroadcast )
+{
+    impl_->SetEnableBroadcast( enableBroadcast );
+}
+
+void UdpSocket::SetAllowReuse( bool allowReuse )
+{
+    impl_->SetAllowReuse( allowReuse );
 }
 
 IpEndpointName UdpSocket::LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const

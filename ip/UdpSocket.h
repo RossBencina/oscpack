@@ -84,20 +84,34 @@ class UdpSocket{
     
 public:
 
-	// ctor throws std::runtime_error if there's a problem
+	// Ctor throws std::runtime_error if there's a problem
 	// initializing the socket.
 	UdpSocket();
 	virtual ~UdpSocket();
 
-	// the socket is created in an unbound, unconnected state
+	// Enable broadcast addresses (e.g. x.x.x.255)
+	// Sets SO_BROADCAST socket option.
+	void SetEnableBroadcast( bool enableBroadcast );
+
+	// Enable multiple listeners for a single port on same 
+	// network interface*
+	// Sets SO_REUSEADDR (also SO_REUSEPORT on OS X).
+	// [*] The exact behavior of SO_REUSEADDR and 
+	// SO_REUSEPORT is undefined for some common cases 
+	// and may have drastically different behavior on different
+	// operating systems.
+	void SetAllowReuse( bool allowReuse );
+
+
+	// The socket is created in an unbound, unconnected state
 	// such a socket can only be used to send to an arbitrary
 	// address using SendTo(). To use Send() you need to first
 	// connect to a remote endpoint using Connect(). To use
 	// ReceiveFrom you need to first bind to a local endpoint
 	// using Bind().
 
-	// retrieve the local endpoint name when sending to 'to'
-    IpEndpointName LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const;
+	// Retrieve the local endpoint name when sending to 'to'
+	IpEndpointName LocalEndpointFor( const IpEndpointName& remoteEndpoint ) const;
 
 	// Connect to a remote endpoint which is used as the target
 	// for calls to Send()
