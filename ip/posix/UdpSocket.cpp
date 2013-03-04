@@ -431,7 +431,10 @@ public:
 			}
 
 			if( select( fdmax + 1, &tempfds, 0, 0, timeoutPtr ) < 0 && errno != EINTR ){
-   				throw std::runtime_error("select failed\n");
+   				if( break_ )
+   					break;
+   				else
+   					throw std::runtime_error("select failed\n");
 			}
 
 			if ( FD_ISSET( breakPipe_[0], &tempfds ) ){
