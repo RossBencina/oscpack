@@ -377,107 +377,115 @@ public:
     void Run()
 	{
 		break_ = false;
+        char *data = 0;
+        
+        try{
+            
+            // configure the master fd_set for select()
 
-		// configure the master fd_set for select()
+            fd_set masterfds, tempfds;
+            FD_ZERO( &masterfds );
+            FD_ZERO( &tempfds );
+            
+            // in addition to listening to the inbound sockets we
+            // also listen to the asynchronous break pipe, so that AsynchronousBreak()
+            // can break us out of select() from another thread.
+            FD_SET( breakPipe_[0], &masterfds );
+            int fdmax = breakPipe_[0];		
 
-		fd_set masterfds, tempfds;
-		FD_ZERO( &masterfds );
-		FD_ZERO( &tempfds );
-		
-		// in addition to listening to the inbound sockets we
-		// also listen to the asynchronous break pipe, so that AsynchronousBreak()
-		// can break us out of select() from another thread.
-		FD_SET( breakPipe_[0], &masterfds );
-		int fdmax = breakPipe_[0];		
+            for( std::vector< std::pair< PacketListener*, UdpSocket* > >::iterator i = socketListeners_.begin();
+                    i != socketListeners_.end(); ++i ){
 
-		for( std::vector< std::pair< PacketListener*, UdpSocket* > >::iterator i = socketListeners_.begin();
-				i != socketListeners_.end(); ++i ){
-
-			if( fdmax < i->second->impl_->Socket() )
-				fdmax = i->second->impl_->Socket();
-			FD_SET( i->second->impl_->Socket(), &masterfds );
-		}
+                if( fdmax < i->second->impl_->Socket() )
+                    fdmax = i->second->impl_->Socket();
+                FD_SET( i->second->impl_->Socket(), &masterfds );
+            }
 
 
-		// configure the timer queue
-		double currentTimeMs = GetCurrentTimeMs();
+            // configure the timer queue
+            double currentTimeMs = GetCurrentTimeMs();
 
-		// expiry time ms, listener
-		std::vector< std::pair< double, AttachedTimerListener > > timerQueue_;
-		for( std::vector< AttachedTimerListener >::iterator i = timerListeners_.begin();
-				i != timerListeners_.end(); ++i )
-			timerQueue_.push_back( std::make_pair( currentTimeMs + i->initialDelayMs, *i ) );
-		std::sort( timerQueue_.begin(), timerQueue_.end(), CompareScheduledTimerCalls );
+            // expiry time ms, listener
+            std::vector< std::pair< double, AttachedTimerListener > > timerQueue_;
+            for( std::vector< AttachedTimerListener >::iterator i = timerListeners_.begin();
+                    i != timerListeners_.end(); ++i )
+                timerQueue_.push_back( std::make_pair( currentTimeMs + i->initialDelayMs, *i ) );
+            std::sort( timerQueue_.begin(), timerQueue_.end(), CompareScheduledTimerCalls );
 
-		const int MAX_BUFFER_SIZE = 4098;
-		char *data = new char[ MAX_BUFFER_SIZE ];
-		IpEndpointName remoteEndpoint;
+            const int MAX_BUFFER_SIZE = 4098;
+            data = new char[ MAX_BUFFER_SIZE ];
+            IpEndpointName remoteEndpoint;
 
-		struct timeval timeout;
+            struct timeval timeout;
 
-		while( !break_ ){
-			tempfds = masterfds;
+            while( !break_ ){
+                tempfds = masterfds;
 
-			struct timeval *timeoutPtr = 0;
-			if( !timerQueue_.empty() ){
-				double timeoutMs = timerQueue_.front().first - GetCurrentTimeMs();
-				if( timeoutMs < 0 )
-					timeoutMs = 0;
-			
-				// 1000000 microseconds in a second
-				timeout.tv_sec = (long)(timeoutMs * .001);
-				timeout.tv_usec = (long)((timeoutMs - (timeout.tv_sec * 1000)) * 1000);
-				timeoutPtr = &timeout;
-			}
+                struct timeval *timeoutPtr = 0;
+                if( !timerQueue_.empty() ){
+                    double timeoutMs = timerQueue_.front().first - GetCurrentTimeMs();
+                    if( timeoutMs < 0 )
+                        timeoutMs = 0;
+                
+                    // 1000000 microseconds in a second
+                    timeout.tv_sec = (long)(timeoutMs * .001);
+                    timeout.tv_usec = (long)((timeoutMs - (timeout.tv_sec * 1000)) * 1000);
+                    timeoutPtr = &timeout;
+                }
 
-			if( select( fdmax + 1, &tempfds, 0, 0, timeoutPtr ) < 0 && errno != EINTR ){
-   				if( break_ )
-   					break;
-   				else
-   					throw std::runtime_error("select failed\n");
-			}
+                if( select( fdmax + 1, &tempfds, 0, 0, timeoutPtr ) < 0 && errno != EINTR ){
+                    if( break_ )
+                        break;
+                    else
+                        throw std::runtime_error("select failed\n");
+                }
 
-			if ( FD_ISSET( breakPipe_[0], &tempfds ) ){
-				// clear pending data from the asynchronous break pipe
-				char c;
-				read( breakPipe_[0], &c, 1 );
-			}
-			
-			if( break_ )
-				break;
+                if ( FD_ISSET( breakPipe_[0], &tempfds ) ){
+                    // clear pending data from the asynchronous break pipe
+                    char c;
+                    read( breakPipe_[0], &c, 1 );
+                }
+                
+                if( break_ )
+                    break;
 
-			for( std::vector< std::pair< PacketListener*, UdpSocket* > >::iterator i = socketListeners_.begin();
-					i != socketListeners_.end(); ++i ){
+                for( std::vector< std::pair< PacketListener*, UdpSocket* > >::iterator i = socketListeners_.begin();
+                        i != socketListeners_.end(); ++i ){
 
-				if( FD_ISSET( i->second->impl_->Socket(), &tempfds ) ){
+                    if( FD_ISSET( i->second->impl_->Socket(), &tempfds ) ){
 
-					std::size_t size = i->second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
-					if( size > 0 ){
-						i->first->ProcessPacket( data, (int)size, remoteEndpoint );
-						if( break_ )
-							break;
-					}
-				}
-			}
+                        std::size_t size = i->second->ReceiveFrom( remoteEndpoint, data, MAX_BUFFER_SIZE );
+                        if( size > 0 ){
+                            i->first->ProcessPacket( data, (int)size, remoteEndpoint );
+                            if( break_ )
+                                break;
+                        }
+                    }
+                }
 
-			// execute any expired timers
-			currentTimeMs = GetCurrentTimeMs();
-			bool resort = false;
-			for( std::vector< std::pair< double, AttachedTimerListener > >::iterator i = timerQueue_.begin();
-					i != timerQueue_.end() && i->first <= currentTimeMs; ++i ){
+                // execute any expired timers
+                currentTimeMs = GetCurrentTimeMs();
+                bool resort = false;
+                for( std::vector< std::pair< double, AttachedTimerListener > >::iterator i = timerQueue_.begin();
+                        i != timerQueue_.end() && i->first <= currentTimeMs; ++i ){
 
-				i->second.listener->TimerExpired();
-				if( break_ )
-					break;
+                    i->second.listener->TimerExpired();
+                    if( break_ )
+                        break;
 
-				i->first += i->second.periodMs;
-				resort = true;
-			}
-			if( resort )
-				std::sort( timerQueue_.begin(), timerQueue_.end(), CompareScheduledTimerCalls );
-		}
+                    i->first += i->second.periodMs;
+                    resort = true;
+                }
+                if( resort )
+                    std::sort( timerQueue_.begin(), timerQueue_.end(), CompareScheduledTimerCalls );
+            }
 
-		delete [] data;
+            delete [] data;
+        }catch(...){
+            if( data )
+                delete [] data;
+            throw;
+        }
 	}
 
     void Break()
