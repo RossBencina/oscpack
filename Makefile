@@ -11,7 +11,7 @@ CDEBUG = -Wall -Wextra -g
 CXXFLAGS = $(COPTS) $(INCLUDES) -D$(ENDIANESS)
 
 PREFIX = /usr/local
-INSTALL = /usr/bin/install -c
+INSTALL = install -c
 
 #Name definitions
 UNITTESTS=OscUnitTests
