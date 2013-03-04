@@ -15,8 +15,10 @@ INSTALL = install -c
 
 #Name definitions
 UNITTESTS=OscUnitTests
-SEND=OscSendTests
-RECEIVE=OscReceiveTest
+SENDTESTS=OscSendTests
+RECEIVETEST=OscReceiveTest
+SIMPLESEND=SimpleSend
+SIMPLERECEIVE=SimpleReceive
 DUMP=OscDump
 
 INCLUDEDIR = oscpack
@@ -24,18 +26,27 @@ LIBNAME = liboscpack
 LIBSONAME = $(LIBNAME).so
 LIBFILENAME = $(LIBSONAME).1.0.2
 
-#Test and example source
-SENDSOURCES = ./tests/OscSendTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp ./ip/IpEndpointName.cpp
-SENDOBJECTS = $(SENDSOURCES:.cpp=.o)
+#Test source
+UNITTESTSOURCES = ./tests/OscUnitTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp
+UNITTESTOBJECTS = $(UNITTESTSOURCES:.cpp=.o)
 
-RECEIVESOURCES = ./tests/OscReceiveTest.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
-RECEIVEOBJECTS = $(RECEIVESOURCES:.cpp=.o)
+SENDTESTSSOURCES = ./tests/OscSendTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp ./ip/IpEndpointName.cpp
+SENDTESTSOBJECTS = $(SENDTESTSSOURCES:.cpp=.o)
+
+RECEIVETESTSOURCES = ./tests/OscReceiveTest.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
+RECEIVETESTOBJECTS = $(RECEIVETESTSOURCES:.cpp=.o)
+
+#Example source
+
+SIMPLESENDSOURCES = ./examples/SimpleSend.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp ./ip/IpEndpointName.cpp
+SIMPLESENDOBJECTS = $(SIMPLESENDSOURCES:.cpp=.o)
+
+SIMPLERECEIVESOURCES = ./examples/SimpleReceive.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
+SIMPLERECEIVEOBJECTS = $(SIMPLERECEIVESOURCES:.cpp=.o)
 
 DUMPSOURCES = ./examples/OscDump.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
 DUMPOBJECTS = $(DUMPSOURCES:.cpp=.o)
 
-UNITTESTSOURCES = ./tests/OscUnitTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp
-UNITTESTOBJECTS = $(UNITTESTSOURCES:.cpp=.o)
 
 #Library sources
 LIBSOURCES = ./ip/IpEndpointName.cpp \
@@ -43,23 +54,30 @@ LIBSOURCES = ./ip/IpEndpointName.cpp \
 	./osc/OscOutboundPacketStream.cpp ./osc/OscPrintReceivedElements.cpp ./osc/OscReceivedElements.cpp ./osc/OscTypes.cpp
 LIBOBJECTS = $(LIBSOURCES:.cpp=.o)
 
-all:	unittests send receive dump
+all:	unittests sendtests receivetest simplesend simplereceive dump
 
 unittests : $(UNITTESTOBJECTS)
 	@if [ ! -d bin ] ; then mkdir bin ; fi
 	$(CXX) -o bin/$(UNITTESTS) $+ $(LIBS) 
-send : $(SENDOBJECTS)
+sendtests : $(SENDTESTSOBJECTS)
 	@if [ ! -d bin ] ; then mkdir bin ; fi
-	$(CXX) -o bin/$(SEND) $+ $(LIBS) 
-receive : $(RECEIVEOBJECTS)
+	$(CXX) -o bin/$(SENDTESTS) $+ $(LIBS) 
+receivetest : $(RECEIVETESTOBJECTS)
 	@if [ ! -d bin ] ; then mkdir bin ; fi
-	$(CXX) -o bin/$(RECEIVE) $+ $(LIBS) 
+	$(CXX) -o bin/$(RECEIVETEST) $+ $(LIBS)
+
+simplesend : $(SIMPLESENDOBJECTS)
+	@if [ ! -d bin ] ; then mkdir bin ; fi
+	$(CXX) -o bin/$(SIMPLESEND) $+ $(LIBS) 
+simplereceive : $(SIMPLERECEIVEOBJECTS)
+	@if [ ! -d bin ] ; then mkdir bin ; fi
+	$(CXX) -o bin/$(SIMPLERECEIVE) $+ $(LIBS) 
 dump : $(DUMPOBJECTS)
 	@if [ ! -d bin ] ; then mkdir bin ; fi
 	$(CXX) -o bin/$(DUMP) $+ $(LIBS) 
 
 clean:
-	rm -rf bin $(UNITTESTOBJECTS) $(SENDOBJECTS) $(RECEIVEOBJECTS) $(DUMPOBJECTS) $(LIBOBJECTS) $(LIBFILENAME) include lib oscpack &> /dev/null
+	rm -rf bin $(UNITTESTOBJECTS) $(SENDTESTSOBJECTS) $(RECEIVETESTOBJECTS) $(DUMPOBJECTS) $(LIBOBJECTS) $(LIBFILENAME) include lib oscpack &> /dev/null
 
 $(LIBFILENAME): $(LIBOBJECTS)
 	@#GNU/Linux case
