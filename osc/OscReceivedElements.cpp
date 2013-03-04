@@ -463,7 +463,7 @@ std::size_t ReceivedMessageArgument::ComputeArrayItemCount() const
     // has already checked that the message is well formed.
     while( *typeTag ) {
         switch( *typeTag++ ) {
-            case ARRAY_START_TYPE_TAG:
+            case ARRAY_BEGIN_TYPE_TAG:
                 level += 1;
                 break;
 
@@ -537,7 +537,7 @@ void ReceivedMessageArgumentIterator::Advance()
             }
             break;
 
-        case ARRAY_START_TYPE_TAG:
+        case ARRAY_BEGIN_TYPE_TAG:
         case ARRAY_END_TYPE_TAG: 
 
             //    [ Indicates the beginning of an array. The tags following are for
@@ -643,7 +643,7 @@ void ReceivedMessage::Init( const char *message, osc_bundle_element_size_t size 
                     //    [ Indicates the beginning of an array. The tags following are for
                     //        data in the Array until a close brace tag is reached.
                     //    ] Indicates the end of an array.
-                    case ARRAY_START_TYPE_TAG:
+                    case ARRAY_BEGIN_TYPE_TAG:
                         ++arrayLevel;
                         // (zero length argument data)
                         break;

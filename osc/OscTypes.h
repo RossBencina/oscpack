@@ -126,7 +126,7 @@ enum TypeTagValues {
     STRING_TYPE_TAG = 's',
     SYMBOL_TYPE_TAG = 'S',
     BLOB_TYPE_TAG = 'b',
-    ARRAY_START_TYPE_TAG = '[',
+    ARRAY_BEGIN_TYPE_TAG = '[',
     ARRAY_END_TYPE_TAG = ']'
 };
 

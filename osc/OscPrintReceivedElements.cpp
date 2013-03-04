@@ -164,7 +164,7 @@ std::ostream& operator<<( std::ostream & os,
             }
             break;
 
-        case ARRAY_START_TYPE_TAG:
+        case ARRAY_BEGIN_TYPE_TAG:
             os << "[";
             break;
 

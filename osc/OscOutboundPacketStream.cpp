@@ -663,7 +663,7 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const ArrayInitiator& rh
     (void) rhs;
     CheckForAvailableArgumentSpace(0);
 
-    *(--typeTagsCurrent_) = ARRAY_START_TYPE_TAG;
+    *(--typeTagsCurrent_) = ARRAY_BEGIN_TYPE_TAG;
 
     return *this;
 }
