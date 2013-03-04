@@ -121,20 +121,17 @@ std::ostream& operator<<( std::ostream & os,
 
         case TIME_TAG_TYPE_TAG:
             {
-                os << "OSC-timetag:" << arg.AsTimeTagUnchecked();
+                os << "OSC-timetag:" << arg.AsTimeTagUnchecked() << " ";
 
                 std::time_t t =
                         (unsigned long)( arg.AsTimeTagUnchecked() >> 32 );
 
-                // strip trailing newline from string returned by ctime
                 const char *timeString = std::ctime( &t );
                 size_t len = std::strlen( timeString );
-                char *s = new char[ len + 1 ];
-                std::strcpy( s, timeString );
-                if( len )
-                    s[ len - 1 ] = '\0';
-                    
-                os << " " << s;
+
+                // -1 to omit trailing newline from string returned by ctime()
+                if( len > 1 )
+                    os.write( timeString, len - 1 );
             }
             break;
                 
