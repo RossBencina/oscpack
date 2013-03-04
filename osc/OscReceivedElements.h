@@ -272,6 +272,12 @@ public:
     void AsBlob( const void*& data, osc_bundle_element_size_t& size ) const;
     void AsBlobUnchecked( const void*& data, osc_bundle_element_size_t& size ) const;
     
+    bool IsArrayStart() const { return *typeTagPtr_ == ARRAY_START_TYPE_TAG; }
+    bool IsArrayEnd() const { return *typeTagPtr_ == ARRAY_END_TYPE_TAG; }
+    // Calculate the number of top-level items in the array. Nested arrays count as one item.
+    // Only valid at array start. Will throw an exception if IsArrayStart() == false.
+    std::size_t ArrayItemCount() const;
+
 private:
 	const char *typeTagPtr_;
 	const char *argumentPtr_;
@@ -352,6 +358,7 @@ public:
 
     // not sure if it would be useful to stream Nil and Infinitum
     // for now it's not possible
+    // same goes for array boundaries
 
     ReceivedMessageArgumentStream& operator>>( int32& rhs )
     {

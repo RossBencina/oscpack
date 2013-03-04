@@ -46,5 +46,7 @@ NilType OscNil;
 NilType Nil; // Objective-C defines Nil. so our Nil is deprecated. use OscNil instead
 #endif
 InfinitumType Infinitum;
+ArrayInitiator BeginArray;
+ArrayTerminator EndArray;
 
 } // namespace osc

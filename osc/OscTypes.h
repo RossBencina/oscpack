@@ -125,7 +125,9 @@ enum TypeTagValues {
     DOUBLE_TYPE_TAG = 'd',
     STRING_TYPE_TAG = 's',
     SYMBOL_TYPE_TAG = 'S',
-    BLOB_TYPE_TAG = 'b'
+    BLOB_TYPE_TAG = 'b',
+    ARRAY_START_TYPE_TAG = '[',
+    ARRAY_END_TYPE_TAG = ']'
 };
 
 
@@ -221,6 +223,16 @@ struct Blob{
     const void* data;
     osc_bundle_element_size_t size;
 };
+
+struct ArrayInitiator{
+};
+
+extern ArrayInitiator BeginArray;
+
+struct ArrayTerminator{
+};
+
+extern ArrayTerminator EndArray;
 
 } // namespace osc
 

@@ -238,6 +238,8 @@ void test2()
         TEST2_PRINT( "/Nil\0\0\0\0,N\0\0" );
         //            01230 1 2 3 012 3
         TEST2_PRINT( "/Inf\0\0\0\0,I\0\0" );
+        //            0123012 3 0123012 3 0 1 2 3  0 1 2 3  0 1 2 3  
+        TEST2_PRINT( "/Array\0\0,[iii]\0\0\0\0\0\x1\0\0\0\x2\0\0\0\x3" );
 
         TEST2_PRINT( "/test\0\0\0,fiT\0\0\0\0\0\0\0\0\0\0\0A" );
                                                         
@@ -378,6 +380,36 @@ void test3()
         assertEqual( size, (osc_bundle_element_size_t)4 );
         assertEqual( (memcmp( value, blobData, 4 ) == 0), true );
     }
+
+    // array
+    {
+        int32 arrayData[] = {1,2,3,4};
+        const std::size_t arrayItemCount = 4;
+        std::memset( buffer, 0x74, bufferSize );
+        OutboundPacketStream ps( buffer, bufferSize );
+        ps << BeginMessage( "/an_array" )
+            << BeginArray;
+        for( int j=0; j < arrayItemCount; ++j )
+            ps << arrayData[j];
+        ps << EndArray << EndMessage;
+        assertEqual( ps.IsReady(), true );
+        ReceivedMessage m( ReceivedPacket(ps.Data(), ps.Size()) );
+        std::cout << m << "\n";
+
+        ReceivedMessageArgumentIterator i = m.ArgumentsBegin();
+        assertEqual( i->IsArrayStart(), true );
+        assertEqual( i->ArrayItemCount(), arrayItemCount );
+        ++i;
+        for( int j=0; j < arrayItemCount; ++j ){
+            assertEqual( true, i->IsInt32() );
+            int32 k = i->AsInt32();
+            assertEqual( k, arrayData[j] );
+            ++i;
+        }
+
+        assertEqual( i->IsArrayEnd(), true );
+    }
+
 
 
     TEST_PACK_UNPACK( "/a_string", "hello world", const char*, AsString );

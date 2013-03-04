@@ -658,6 +658,26 @@ OutboundPacketStream& OutboundPacketStream::operator<<( const Blob& rhs )
     return *this;
 }
 
+OutboundPacketStream& OutboundPacketStream::operator<<( const ArrayInitiator& rhs )
+{
+    (void) rhs;
+    CheckForAvailableArgumentSpace(0);
+
+    *(--typeTagsCurrent_) = ARRAY_START_TYPE_TAG;
+
+    return *this;
+}
+
+OutboundPacketStream& OutboundPacketStream::operator<<( const ArrayTerminator& rhs )
+{
+    (void) rhs;
+    CheckForAvailableArgumentSpace(0);
+
+    *(--typeTagsCurrent_) = ARRAY_END_TYPE_TAG;
+
+    return *this;
+}
+
 } // namespace osc
 
 

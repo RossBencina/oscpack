@@ -449,6 +449,39 @@ void ReceivedMessageArgument::AsBlobUnchecked( const void*& data, osc_bundle_ele
 	data = (void*)(argumentPtr_+ osc::OSC_SIZEOF_INT32);
 }
 
+std::size_t ReceivedMessageArgument::ArrayItemCount() const
+{
+    // it is only valid to call ArrayItemCount when the argument is the array start marker
+    if( !IsArrayStart() )
+        throw WrongArgumentTypeException();
+
+    std::size_t result = 0;
+    unsigned int level = 0;
+    const char *typeTag = typeTagPtr_ + 1;
+
+    // iterate through all type tags. note that ReceivedMessage::Init
+    // has already checked that the message is well formed.
+    while( *typeTag ) {
+        switch( *typeTag++ ) {
+            case ARRAY_START_TYPE_TAG:
+                level += 1;
+                break;
+
+            case ARRAY_END_TYPE_TAG:
+                if(level == 0)
+                    return result;
+                level -= 1;
+                break;
+
+            default:
+                if( level == 0 ) // only count items at level 0
+                    ++result;
+        }
+    }
+
+    return result;
+}
+
 //------------------------------------------------------------------------------
 
 void ReceivedMessageArgumentIterator::Advance()
@@ -466,7 +499,7 @@ void ReceivedMessageArgumentIterator::Advance()
         case FALSE_TYPE_TAG:
         case NIL_TYPE_TAG:
         case INFINITUM_TYPE_TAG:
-
+        
             // zero length
             break;
 
@@ -504,16 +537,20 @@ void ReceivedMessageArgumentIterator::Advance()
             }
             break;
 
+        case ARRAY_START_TYPE_TAG:
+        case ARRAY_END_TYPE_TAG: 
+
+            //    [ Indicates the beginning of an array. The tags following are for
+            //        data in the Array until a close brace tag is reached.
+            //    ] Indicates the end of an array.
+
+            // zero length, don't advance argument ptr
+            break;
+
         default:    // unknown type tag
             // don't advance
             --value_.typeTagPtr_;
             break;
-            
-
-        //    not handled:
-        //    [ Indicates the beginning of an array. The tags following are for
-        //        data in the Array until a close brace tag is reached.
-        //    ] Indicates the end of an array.
     }
 }
 
@@ -592,6 +629,7 @@ void ReceivedMessage::Init( const char *message, osc_bundle_element_size_t size 
             
             const char *typeTag = typeTagsBegin_;
             const char *argument = arguments_;
+            unsigned int arrayLevel = 0;
                         
             do{
                 switch( *typeTag ){
@@ -599,8 +637,20 @@ void ReceivedMessage::Init( const char *message, osc_bundle_element_size_t size 
                     case FALSE_TYPE_TAG:
                     case NIL_TYPE_TAG:
                     case INFINITUM_TYPE_TAG:
-
                         // zero length
+                        break;
+
+                    //    [ Indicates the beginning of an array. The tags following are for
+                    //        data in the Array until a close brace tag is reached.
+                    //    ] Indicates the end of an array.
+                    case ARRAY_START_TYPE_TAG:
+                        ++arrayLevel;
+                        // (zero length argument data)
+                        break;
+
+                    case ARRAY_END_TYPE_TAG:
+                        --arrayLevel;
+                        // (zero length argument data)
                         break;
 
                     case INT32_TYPE_TAG:
@@ -652,15 +702,13 @@ void ReceivedMessage::Init( const char *message, osc_bundle_element_size_t size 
                         
                     default:
                         throw MalformedMessageException( "unknown type tag" );
-
-                    //    not handled:
-                    //    [ Indicates the beginning of an array. The tags following are for
-                    //        data in the Array until a close brace tag is reached.
-                    //    ] Indicates the end of an array.
                 }
 
             }while( *++typeTag != '\0' );
             typeTagsEnd_ = typeTag;
+
+            if( arrayLevel !=  0 )
+                throw MalformedMessageException( "array was not terminated before end of message (expected ']' end of array tag)" );
         }
 
         // These invariants should be guaranteed by the above code.

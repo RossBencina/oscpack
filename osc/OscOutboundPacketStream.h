@@ -121,6 +121,9 @@ public:
     OutboundPacketStream& operator<<( const Symbol& rhs );
     OutboundPacketStream& operator<<( const Blob& rhs );
 
+    OutboundPacketStream& operator<<( const ArrayInitiator& rhs );
+    OutboundPacketStream& operator<<( const ArrayTerminator& rhs );
+
 private:
 
     char *BeginElement( char *beginPtr );
