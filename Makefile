@@ -41,7 +41,7 @@ RECEIVETESTOBJECTS = $(RECEIVETESTSOURCES:.cpp=.o)
 SIMPLESENDSOURCES = ./examples/SimpleSend.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp ./ip/IpEndpointName.cpp
 SIMPLESENDOBJECTS = $(SIMPLESENDSOURCES:.cpp=.o)
 
-SIMPLERECEIVESOURCES = ./examples/SimpleReceive.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
+SIMPLERECEIVESOURCES = ./examples/SimpleReceive.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
 SIMPLERECEIVEOBJECTS = $(SIMPLERECEIVESOURCES:.cpp=.o)
 
 DUMPSOURCES = ./examples/OscDump.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp ./ip/posix/NetworkingUtils.cpp ./ip/posix/UdpSocket.cpp
