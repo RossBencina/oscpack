@@ -276,7 +276,7 @@ public:
     bool IsArrayEnd() const { return *typeTagPtr_ == ARRAY_END_TYPE_TAG; }
     // Calculate the number of top-level items in the array. Nested arrays count as one item.
     // Only valid at array start. Will throw an exception if IsArrayStart() == false.
-    std::size_t ArrayItemCount() const;
+    std::size_t ComputeArrayItemCount() const;
 
 private:
 	const char *typeTagPtr_;

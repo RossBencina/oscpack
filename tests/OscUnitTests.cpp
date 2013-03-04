@@ -384,12 +384,12 @@ void test3()
     // array
     {
         int32 arrayData[] = {1,2,3,4};
-        const std::size_t arrayItemCount = 4;
+        const std::size_t sourceArrayItemCount = 4;
         std::memset( buffer, 0x74, bufferSize );
         OutboundPacketStream ps( buffer, bufferSize );
         ps << BeginMessage( "/an_array" )
             << BeginArray;
-        for( std::size_t j=0; j < arrayItemCount; ++j )
+        for( std::size_t j=0; j < sourceArrayItemCount; ++j )
             ps << arrayData[j];
         ps << EndArray << EndMessage;
         assertEqual( ps.IsReady(), true );
@@ -398,8 +398,9 @@ void test3()
 
         ReceivedMessageArgumentIterator i = m.ArgumentsBegin();
         assertEqual( i->IsArrayStart(), true );
-        assertEqual( i->ArrayItemCount(), arrayItemCount );
-        ++i;
+        assertEqual( i->ComputeArrayItemCount(), sourceArrayItemCount );
+        std::size_t arrayItemCount = i->ComputeArrayItemCount();
+        ++i; // move past array begin marker        
         for( std::size_t j=0; j < arrayItemCount; ++j ){
             assertEqual( true, i->IsInt32() );
             int32 k = i->AsInt32();
