@@ -1,9 +1,15 @@
-# should be either OSC_HOST_BIG_ENDIAN or OSC_HOST_LITTLE_ENDIAN
+# oscpack makefile
+
+# the source code should auto-detect endianess for most systems
+# otherwise you need to explicitly set ENDIANESS below
+# to either OSC_HOST_BIG_ENDIAN or OSC_HOST_LITTLE_ENDIAN
 # Apple Mac OS X (PowerPC): OSC_HOST_BIG_ENDIAN
 # Apple Mac OS X (Intel): OSC_HOST_LITTLE_ENDIAN
 # Win32: OSC_HOST_LITTLE_ENDIAN
 # i386 GNU/Linux: OSC_HOST_LITTLE_ENDIAN
-ENDIANESS=OSC_HOST_LITTLE_ENDIAN
+
+ENDIANESS=OSC_DETECT_ENDIANESS #source code will detect using preprocessor
+#ENDIANESS=OSC_HOST_LITTLE_ENDIAN
 
 UNAME := $(shell uname)
 
@@ -27,7 +33,7 @@ DUMP=OscDump
 INCLUDEDIR = oscpack
 LIBNAME = liboscpack
 LIBSONAME = $(LIBNAME).so
-LIBFILENAME = $(LIBSONAME).1.0.2
+LIBFILENAME = $(LIBSONAME).1.1.0
 
 #Test source
 UNITTESTSOURCES = ./tests/OscUnitTests.cpp ./osc/OscOutboundPacketStream.cpp ./osc/OscTypes.cpp ./osc/OscReceivedElements.cpp ./osc/OscPrintReceivedElements.cpp
