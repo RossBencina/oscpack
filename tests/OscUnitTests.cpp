@@ -389,7 +389,7 @@ void test3()
         OutboundPacketStream ps( buffer, bufferSize );
         ps << BeginMessage( "/an_array" )
             << BeginArray;
-        for( int j=0; j < arrayItemCount; ++j )
+        for( std::size_t j=0; j < arrayItemCount; ++j )
             ps << arrayData[j];
         ps << EndArray << EndMessage;
         assertEqual( ps.IsReady(), true );
@@ -400,7 +400,7 @@ void test3()
         assertEqual( i->IsArrayStart(), true );
         assertEqual( i->ArrayItemCount(), arrayItemCount );
         ++i;
-        for( int j=0; j < arrayItemCount; ++j ){
+        for( std::size_t j=0; j < arrayItemCount; ++j ){
             assertEqual( true, i->IsInt32() );
             int32 k = i->AsInt32();
             assertEqual( k, arrayData[j] );
