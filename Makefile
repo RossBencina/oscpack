@@ -1,8 +1,11 @@
 # should be either OSC_HOST_BIG_ENDIAN or OSC_HOST_LITTLE_ENDIAN
-# Apple Mac OS X: OSC_HOST_BIG_ENDIAN
+# Apple Mac OS X (PowerPC): OSC_HOST_BIG_ENDIAN
+# Apple Mac OS X (Intel): OSC_HOST_LITTLE_ENDIAN
 # Win32: OSC_HOST_LITTLE_ENDIAN
 # i386 GNU/Linux: OSC_HOST_LITTLE_ENDIAN
 ENDIANESS=OSC_HOST_LITTLE_ENDIAN
+
+UNAME := $(shell uname)
 
 CXX = g++
 INCLUDES = -I./
@@ -80,11 +83,14 @@ clean:
 	rm -rf bin $(UNITTESTOBJECTS) $(SENDTESTSOBJECTS) $(RECEIVETESTOBJECTS) $(DUMPOBJECTS) $(LIBOBJECTS) $(LIBFILENAME) include lib oscpack &> /dev/null
 
 $(LIBFILENAME): $(LIBOBJECTS)
-	@#GNU/Linux case
+ifeq ($(UNAME), Darwin)
+	#Mac OS X case
+	$(CXX) -dynamiclib -Wl,-install_name,$(LIBSONAME) -o $(LIBFILENAME) $(LIBOBJECTS) -lc
+else
+	#GNU/Linux case
 	$(CXX) -shared -Wl,-soname,$(LIBSONAME) -o $(LIBFILENAME) $(LIBOBJECTS) -lc
-	@#Mac OS X case
-	@#$(CXX) -dynamiclib -Wl,-install_name,$(LIBSONAME) -o $(LIBFILENAME) $(LIBOBJECTS) -lc
-	
+endif
+
 lib: $(LIBFILENAME)
 
 #Installs the library on a system global location
@@ -95,8 +101,10 @@ install: lib
 	@$(INSTALL) -m 644 ip/*.h $(PREFIX)/include/oscpack/ip
 	@$(INSTALL) -m 644 osc/*.h $(PREFIX)/include/oscpack/osc
 	@echo "SUCCESS! oscpack has been installed in $(PREFIX)/lib and $(PREFIX)/include/ospack/"
+ifneq ($(UNAME), Darwin)
 	@echo "now doing ldconfig..."
 	@ldconfig
+endif
 
 #Installs the include/lib structure locally
 install-local: lib
