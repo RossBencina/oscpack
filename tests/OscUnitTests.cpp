@@ -397,7 +397,7 @@ void test3()
         std::cout << m << "\n";
 
         ReceivedMessageArgumentIterator i = m.ArgumentsBegin();
-        assertEqual( i->IsArrayStart(), true );
+        assertEqual( i->IsArrayBegin(), true );
         assertEqual( i->ComputeArrayItemCount(), sourceArrayItemCount );
         std::size_t arrayItemCount = i->ComputeArrayItemCount();
         ++i; // move past array begin marker        

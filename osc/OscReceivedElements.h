@@ -272,7 +272,7 @@ public:
     void AsBlob( const void*& data, osc_bundle_element_size_t& size ) const;
     void AsBlobUnchecked( const void*& data, osc_bundle_element_size_t& size ) const;
     
-    bool IsArrayStart() const { return *typeTagPtr_ == ARRAY_BEGIN_TYPE_TAG; }
+    bool IsArrayBegin() const { return *typeTagPtr_ == ARRAY_BEGIN_TYPE_TAG; }
     bool IsArrayEnd() const { return *typeTagPtr_ == ARRAY_END_TYPE_TAG; }
     // Calculate the number of top-level items in the array. Nested arrays count as one item.
     // Only valid at array start. Will throw an exception if IsArrayStart() == false.

@@ -452,7 +452,7 @@ void ReceivedMessageArgument::AsBlobUnchecked( const void*& data, osc_bundle_ele
 std::size_t ReceivedMessageArgument::ComputeArrayItemCount() const
 {
     // it is only valid to call ComputeArrayItemCount when the argument is the array start marker
-    if( !IsArrayStart() )
+    if( !IsArrayBegin() )
         throw WrongArgumentTypeException();
 
     std::size_t result = 0;
