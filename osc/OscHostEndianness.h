@@ -39,15 +39,14 @@
 
 /*
     Make sure either OSC_HOST_LITTLE_ENDIAN or OSC_HOST_BIG_ENDIAN is defined
-
-    If you know a way to enhance the detection below for Linux and/or MacOSX
-    please let me know! I've tried a few things which don't work.
 */
 
 #if defined(OSC_HOST_LITTLE_ENDIAN) || defined(OSC_HOST_BIG_ENDIAN)
 
 // you can define one of the above symbols from the command line
-// then you don't have to edit this file.
+// then you don't have to edit this file. usually you do this with the -D
+// flag to the compiler. e.g.:
+// $ g++ -DOSC_HOST_LITTLE_ENDIAN ...
 
 #elif defined(__WIN32__) || defined(WIN32) || defined(WINCE)
 
@@ -100,7 +99,7 @@
 
 #if !defined(OSC_HOST_LITTLE_ENDIAN) && !defined(OSC_HOST_BIG_ENDIAN)
 
-#error please edit OSCHostEndianness.h to configure endianness
+#error please edit OSCHostEndianness.h or define one of {OSC_HOST_LITTLE_ENDIAN, OSC_HOST_BIG_ENDIAN} to configure endianness
 
 #endif
 
