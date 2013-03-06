@@ -1,20 +1,65 @@
-January 24, 2013
-------------------
+March 6, 2013
+--------------------
 
-    - Some member functions that previously used the "int" type for 
-    parameters or return values now use std::size_t. This change 
-    was made to better support 64 bit platforms.
+Changes for the 1.1.0 release (vs 1.0.2) are listed below. Unless
+otherwise indicated these changes have been made since 
+January 2013. The focus has been on general clean-up, fixing 
+compiler errors and warnings, fixing issues on 64 bit platforms. 
+A few improvements such as support for OSC arrays, 
+broadcast and reuse socket options have been added.
 
+	- Added support for arrays in messages (see OscUnitTests.cpp 
+    for example usage). (patch thanks to Tim Blechmann)
+    
+    - Fixed bugs relating to 64 bit usage (e.g. crashes in 64 bit 
+   	builds on OS X).
+   	
+    - Some member functions that previously used the "int" or
+    "unsigned long" type for parameters or return values now use 
+    std::size_t (platform-defined) or 
+    osc_bundle_element_size_t (a.k.a. int32).   
+    This change  was made to better support 64 bit platforms.
     See SVN revision 70 for details.
 
-    Note that oscpack is still not guaranteed to support packets larger 
-    than 0x7FFFFFFF (the largest signed 32 bit integer).
-
+    - Note that oscpack does not support packets larger than
+    0x7FFFFFFC (see comments in class ReceivedPacket for
+    details).
+    
     - There is an osc::Nil value used for sending the nil message.
     This conflicts with Objective-C. Therefore osc::Nil is no longer 
     defined in  Obj-C++ code. There is now an osc::OscNil value 
     should be preferred. osc::Nil is still available when writing C++.
+    (fix thanks to oFx)
     
+   	- Added UdpSocket::SetEnableBroadcast() which needs to 
+    be called to enable sending to the broadcast address on some
+    platforms (e.g. Mac OS X). (thanks to oFx)
+    
+    - Added UdpSocket::SetAllowReuse() which is useful for 
+    sharing sockets on some platforms (Mac?), and not so useful 
+    on other platforms. (thanks to oFx)
+    
+    - Added IpEndpointName::IsMulticastAddress() (2010)
+    
+    - Cleaned up C++ header usage and std:: namespace usage
+   	to be more standards compliant (fixes issues on recent compilers
+   	such as clang and gcc4.6).
+   	
+    - Improved host endianness detection. Should auto-detect
+    endianness on most platforms now.
+    (thanks to Tim Blechmann for help with this)
+   
+    - Added CMakeLists.txt cmake build file (2010, thanks David Doria)
+      
+    - Switched license to plain MIT license with non binding request
+    for contribution of improvements (same as current PortAudio 
+    boilerplate). See LICENSE file.
+       
+    Thanks to Tim Blechmann, Rob Canning, Gwydion ap Dafydd,
+    David Doria, all the guys at Open Frameworks, and everyone 
+    who reported bugs, submitted patches and helped out with 
+    testing this release.
+
 
 September 28, 2005
 ------------------

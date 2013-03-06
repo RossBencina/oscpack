@@ -1,6 +1,7 @@
 # oscpack makefile
 
 # the source code should auto-detect endianess for most systems
+# (see osc/OscHostEndianness.h)
 # otherwise you need to explicitly set ENDIANESS below
 # to either OSC_HOST_BIG_ENDIAN or OSC_HOST_LITTLE_ENDIAN
 # Apple Mac OS X (PowerPC): OSC_HOST_BIG_ENDIAN
