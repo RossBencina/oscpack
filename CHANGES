@@ -1,5 +1,5 @@
 March 6, 2013
---------------------
+-------------
 
 Changes for the 1.1.0 release (vs 1.0.2) are listed below. Unless
 otherwise indicated these changes have been made since 
@@ -63,12 +63,10 @@ merges changes from the Open Frameworks version of oscpack.
     for contribution of improvements (same as current PortAudio 
     boilerplate). See LICENSE file.
        
-Thanks to Tim Blechmann, Rob Canning, Gwydion ap Dafydd, David Doria, 
-all the guys at Open Frameworks, and everyone who reported bugs, 
-submitted patches and helped out with testing this release.
-
-Thanks to Syneme at the University of Calgary for providing financial 
-support for the 1.1.0 update.
+    Thanks to Tim Blechmann, Rob Canning, Gwydion ap Dafydd,
+    David Doria, all the guys at Open Frameworks, and everyone 
+    who reported bugs, submitted patches and helped out with 
+    testing this release.
 
 
 September 28, 2005
