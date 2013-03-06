@@ -9,11 +9,11 @@ A few improvements such as support for OSC arrays.
 Broadcast and reuse socket options have been added. This update
 merges changes from the Open Frameworks version of oscpack.
 
-	- Added support for arrays in messages (see OscUnitTests.cpp 
+    - Added support for arrays in messages (see OscUnitTests.cpp 
     for example usage). (patch thanks to Tim Blechmann)
     
     - Fixed bugs relating to 64 bit usage (e.g. crashes in 64 bit 
-   	builds on OS X).
+    builds on OS X).
    	
     - Some member functions that previously used the "int" or
     "unsigned long" type for parameters or return values now use 
@@ -33,7 +33,7 @@ merges changes from the Open Frameworks version of oscpack.
     osc::Nil is still available when writing C++.
     (fix thanks to oFx)
     
-   	- Added UdpSocket::SetEnableBroadcast() which needs to 
+    - Added UdpSocket::SetEnableBroadcast() which needs to 
     be called to enable sending to the broadcast address on some
     platforms (e.g. Mac OS X). (thanks to oFx)
     
@@ -44,8 +44,8 @@ merges changes from the Open Frameworks version of oscpack.
     - Added IpEndpointName::IsMulticastAddress() (2010)
     
     - Cleaned up C++ header usage and std:: namespace usage
-   	to be more standards compliant (fixes issues on recent compilers
-   	such as clang and gcc4.6).
+    to be more standards compliant (fixes issues on recent compilers
+    such as clang and gcc4.6).
    	
     - Improved host endianness detection. Should auto-detect
     endianness on most platforms now.
