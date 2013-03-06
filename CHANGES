@@ -5,8 +5,9 @@ Changes for the 1.1.0 release (vs 1.0.2) are listed below. Unless
 otherwise indicated these changes have been made since 
 January 2013. The focus has been on general clean-up, fixing 
 compiler errors and warnings, fixing issues on 64 bit platforms. 
-A few improvements such as support for OSC arrays, 
-broadcast and reuse socket options have been added.
+A few improvements such as support for OSC arrays. 
+Broadcast and reuse socket options have been added. This update
+merges changes from the Open Frameworks version of oscpack.
 
 	- Added support for arrays in messages (see OscUnitTests.cpp 
     for example usage). (patch thanks to Tim Blechmann)
@@ -25,10 +26,11 @@ broadcast and reuse socket options have been added.
     0x7FFFFFFC (see comments in class ReceivedPacket for
     details).
     
-    - There is an osc::Nil value used for sending the nil message.
-    This conflicts with Objective-C. Therefore osc::Nil is no longer 
-    defined in  Obj-C++ code. There is now an osc::OscNil value 
-    should be preferred. osc::Nil is still available when writing C++.
+    - Oscpack defines an osc::Nil value used for sending the nil 
+    message argument value. This conflicts with Objective-C. 
+    Therefore osc::Nil is no longer defined in  Obj-C++ code. 
+    There is now an osc::OscNil value should be preferred. 
+    osc::Nil is still available when writing C++.
     (fix thanks to oFx)
     
    	- Added UdpSocket::SetEnableBroadcast() which needs to 
@@ -48,6 +50,12 @@ broadcast and reuse socket options have been added.
     - Improved host endianness detection. Should auto-detect
     endianness on most platforms now.
     (thanks to Tim Blechmann for help with this)
+    
+    - Fixed a couple of memory leaks: One in 
+    OscPrintReceivedElements.cpp when printing time tag 
+    message arguments (thanks Gwydion ap Dafydd). The other in 
+    the posix SocketReceiveMultiplexer::Run() method if an exception 
+    was thrown while listening.
    
     - Added CMakeLists.txt cmake build file (2010, thanks David Doria)
       
