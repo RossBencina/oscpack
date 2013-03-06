@@ -129,7 +129,7 @@ public:
 
 	void SetAllowReuse( bool allowReuse )
 	{
-		// Note: XXX is non-deterministic for listening sockets on Win32. See MSDN article:
+		// Note: SO_REUSEADDR is non-deterministic for listening sockets on Win32. See MSDN article:
 		// "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE"
 		// http://msdn.microsoft.com/en-us/library/ms740621%28VS.85%29.aspx
 
