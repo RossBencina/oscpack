@@ -50,25 +50,80 @@ Building
 
 The idea is that you will embed this source code in your projects as you 
 see fit. The Makefile has an install rule for building a shared library and 
-installing headers in usr/local.
+installing headers in usr/local. It can also build a static library.
+There is a CMakeLists.txt for building with cmake.
+
+Makefile builds
+...............
 
 The Makefile works for Linux and Max OS X. It should also work on other platforms
-that have make.
+that have make. Just run:
 
-There is a CMakeLists.txt file which has been tested with cmake on Windows.
+$ make
 
-On Windows there is a batch file for doing a simple test build with MinGW gcc called 
-make.MinGW32.bat. This will build the test executables and oscdump in ./bin and run 
-the unit tests.
+You can run "make install" if you like.
+
+
+Cmake builds
+............
+
+There is a CMakeLists.txt file which has been tested with cmake on 
+Windows and Linux. It should work on other platforms too.
+For example, to generate a Visual Studio 10 project, run cmake 
+like this:
+
+> cmake -G "Visual Studio 10"
+
+Run cmake without any parameters to get a list of available generators.
+
+
+Mingw build batch file
+......................
+
+For Windows there is a batch file for doing a simple test build with 
+MinGW gcc called make.MinGW32.bat. This will build the test executables 
+and oscdump in ./bin and run the unit tests.
+
+
+Note:
 
 In some rare instances you may need to edit the Makefile or 
 osc/OscHostEndianness.h to configure oscpack for the endianness of your 
 processor (see the comments at the top of the Makefile for details).
 
+
+
+Verification test
+-----------------
+
+To run the unit tests:
+
+$ ./bin/OscUnitTests
+
+To run the send and receive tests. Open two terminals. In one run:
+
+$ ./bin/OscReceiveTest
+
+Then in the other terminal run:
+
+$./bin/OscSendTests
+
+
+You should see an indication that the messages were received 
+in the first terminal.
+
+Note that OscSendTests intentionally sends some unexpected
+message parameters to test exception handling in the receiver.
+You will see some "error while parsing message" messages printed. 
+
+You can use ./bin/OscDump to print out OSC messages received
+from any program, including the test programs.
+
+
 --
 
 
-If you fix anything or write a set of TCP send/recieve classes 
+If you fix anything or write a set of TCP send/receive classes 
 please consider sending me a patch. Thanks :)
 
 For more information about Open Sound Control, see:
