@@ -123,7 +123,7 @@ public:
 
 	void SetEnableBroadcast( bool enableBroadcast )
 	{
-		char broadcast = (enableBroadcast) ? 1 : 0; // char on win32
+		char broadcast = (char)((enableBroadcast) ? 1 : 0); // char on win32
 		setsockopt(socket_, SOL_SOCKET, SO_BROADCAST, &broadcast, sizeof(broadcast));
 	}
 
@@ -133,7 +133,7 @@ public:
 		// "Using SO_REUSEADDR and SO_EXCLUSIVEADDRUSE"
 		// http://msdn.microsoft.com/en-us/library/ms740621%28VS.85%29.aspx
 
-		char reuseAddr = (allowReuse) ? 1 : 0; // char on win32
+		char reuseAddr = (char)((allowReuse) ? 1 : 0); // char on win32
 		setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr));
 	}
 
