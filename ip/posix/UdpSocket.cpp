@@ -455,9 +455,10 @@ public:
                     if( timeoutMs < 0 )
                         timeoutMs = 0;
                 
+                    long timoutSecondsPart = (long)(timeoutMs * .001);
+                    timeout.tv_sec = (time_t)timoutSecondsPart;
                     // 1000000 microseconds in a second
-                    timeout.tv_sec = (long)(timeoutMs * .001);
-                    timeout.tv_usec = (long)((timeoutMs - (timeout.tv_sec * 1000)) * 1000);
+                    timeout.tv_usec = (suseconds_t)((timeoutMs - (timoutSecondsPart * 1000)) * 1000);
                     timeoutPtr = &timeout;
                 }
 
