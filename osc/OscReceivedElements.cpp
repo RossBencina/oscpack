@@ -130,7 +130,7 @@ static inline uint32 ToUInt32( const char *p )
 }
 
 
-int64 ToInt64( const char *p )
+static inline int64 ToInt64( const char *p )
 {
 #ifdef OSC_HOST_LITTLE_ENDIAN
     union{
@@ -154,7 +154,7 @@ int64 ToInt64( const char *p )
 }
 
 
-uint64 ToUInt64( const char *p )
+static inline uint64 ToUInt64( const char *p )
 {
 #ifdef OSC_HOST_LITTLE_ENDIAN
     union{
