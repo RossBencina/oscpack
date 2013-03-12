@@ -37,6 +37,7 @@
 #ifndef INCLUDED_OSCPACK_NETWORKINGUTILS_H
 #define INCLUDED_OSCPACK_NETWORKINGUTILS_H
 
+#include "IpEndpointName.h"
 
 // in general NetworkInitializer is only used internally, but if you're 
 // application creates multiple sockets from different threads at runtime you
@@ -50,7 +51,17 @@ public:
 
 
 // return ip address of host name in host byte order
-unsigned long GetHostByName( const char *name );
+///unsigned long GetHostByName( const char *name );
+
+// intended for local name lookup or explicit ip addresses. won't work properly for name->address mappings under IPv6 where
+// there are multiple ip addresses for one name. in that case it just returns the first.
+void IpAddressFromString( unsigned char *address16Chars, unsigned long *scopeZoneIndex, bool *isIpV6Address, const char *addressString );
+
+
+#include <vector>
+
+// return all endpoint names associated with a host name
+void GetHostAdresses( std::vector<IpEndpointName> *endpointNames, const char *name );
 
 
 #endif /* INCLUDED_OSCPACK_NETWORKINGUTILS_H */

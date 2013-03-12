@@ -37,42 +37,146 @@
 #ifndef INCLUDED_OSCPACK_IPENDPOINTNAME_H
 #define INCLUDED_OSCPACK_IPENDPOINTNAME_H
 
+#include <cstring> // memset, memcmp
 
-class IpEndpointName{
-    static unsigned long GetHostByName( const char *s );
+// represents and ip address and port
+
+class IpEndpointName{    
 public:
+    enum AddressType { IPV4_ADDRESS_TYPE, IPV6_ADDRESS_TYPE };
+    
     static const unsigned long ANY_ADDRESS = 0xFFFFFFFF;
     static const int ANY_PORT = -1;
 
+    // Always represent ANY_ADDRESS as an IPv4 address with our ANY_ADDRESS value
+    // This allows the socket code to detect and map an ipv4 any address to an
+    // ipv6 any address when desired
     IpEndpointName()
-		: address( ANY_ADDRESS ), port( ANY_PORT ) {}
-    IpEndpointName( int port_ ) 
-		: address( ANY_ADDRESS ), port( port_ ) {}
-    IpEndpointName( unsigned long ipAddress_, int port_ ) 
-		: address( ipAddress_ ), port( port_ ) {}
-    IpEndpointName( const char *addressName, int port_=ANY_PORT )
-		: address( GetHostByName( addressName ) )
-		, port( port_ ) {}
+        : addressType( IPV4_ADDRESS_TYPE )
+        , scopeZoneIndex( 0 )
+        , port( ANY_PORT )
+    {
+        SetIpV4Address( ANY_ADDRESS );
+    }
+    
+    IpEndpointName( int port_ )
+        : addressType( IPV4_ADDRESS_TYPE )
+        , scopeZoneIndex( 0 )
+        , port( port_ )
+    {
+        SetIpV4Address( ANY_ADDRESS );
+    }
+    
+    IpEndpointName( unsigned long ipV4Address_, int port_ )
+        : addressType( IPV4_ADDRESS_TYPE )
+        , scopeZoneIndex( 0 )
+        , port( port_ )
+    {
+        SetIpV4Address( ipV4Address_ );
+    }
+    
+    // due to the way IPv6 works, it isn't really appropriate to
+    // use this ctor with domain names.
+    // safe for localhost and numeric ip address strings only
+    IpEndpointName( const char *addressString, int port=ANY_PORT );
+    
+    // construct with "dotted" ipv4 8 bit address components as params. eg. 127,0,0,1
     IpEndpointName( int addressA, int addressB, int addressC, int addressD, int port_=ANY_PORT )
-		: address( ( (addressA << 24) | (addressB << 16) | (addressC << 8) | addressD ) )
-		, port( port_ ) {}
-
+        : addressType( IPV4_ADDRESS_TYPE )
+        , scopeZoneIndex( 0 )
+        , port( port_ )
+    {
+        // IMPORTANT: IPv4 adresses are ALWAYS stored in IPv4-mapped IPv6 address form (::ffff:0:0/96)
+        
+        std::memset( &address, 0, 10 );
+        
+        address[10] = 0xFF;
+        address[11] = 0xFF;
+        
+        address[12] = (unsigned char)addressA;
+        address[13] = (unsigned char)addressB;
+        address[14] = (unsigned char)addressC;
+        address[15] = (unsigned char)addressD;
+    }
+    
+    
+    // construct with "coloned" ipv6 16 bit address components as params. eg. 0xfe80,0,0,0,0x3e07,0x54ff,0xfe03,0x5a1a
+    IpEndpointName( int addressA, int addressB, int addressC, int addressD,
+                    int addressE, int addressF, int addressG, int addressH, int port_=ANY_PORT )
+        : addressType( IPV6_ADDRESS_TYPE )
+        , scopeZoneIndex( 0 )
+        , port( port_ )
+    {
+        address[0] = (unsigned char)((addressA >> 8) & 0xFFUL);
+        address[1] = (unsigned char)(addressA & 0xFFUL);
+        
+        address[2] = (unsigned char)((addressB >> 8) & 0xFFUL);
+        address[3] = (unsigned char)(addressB & 0xFFUL);
+        
+        address[4] = (unsigned char)((addressC >> 8) & 0xFFUL);
+        address[5] = (unsigned char)(addressC & 0xFFUL);
+        
+        address[6] = (unsigned char)((addressD >> 8) & 0xFFUL);
+        address[7] = (unsigned char)(addressD & 0xFFUL);
+        
+        address[8] = (unsigned char)((addressE >> 8) & 0xFFUL);
+        address[9] = (unsigned char)(addressE & 0xFFUL);
+        
+        address[10] = (unsigned char)((addressF >> 8) & 0xFFUL);
+        address[11] = (unsigned char)(addressF & 0xFFUL);
+        
+        address[12] = (unsigned char)((addressG >> 8) & 0xFFUL);
+        address[13] = (unsigned char)(addressG & 0xFFUL);
+        
+        address[14] = (unsigned char)((addressH >> 8) & 0xFFUL);
+        address[15] = (unsigned char)(addressH & 0xFFUL);
+    }
+    
 	// address and port are maintained in host byte order here
-    unsigned long address;
+    char addressType; // AddressType
+    
+    // IMPORTANT: IPv4 adresses are ALWAYS stored in IPv4-mapped IPv6 address form (::ffff:0:0/96)
+    unsigned char address[16];
+    
+    unsigned long scopeZoneIndex;
+    
     int port;
 
-    bool IsMulticastAddress() const { return ((address >> 24) & 0xFF) >= 224 && ((address >> 24) & 0xFF) <= 239; }
+    unsigned long IpV4Address() const
+    {
+        return (((unsigned long)address[12]) << 24)
+                | (((unsigned long)address[13]) << 16)
+                | (((unsigned long)address[14]) << 8)
+                | ((unsigned long)address[15]);
+    }
+    
+    void SetIpV4Address( unsigned long ipV4Address_ )
+    {
+        // IMPORTANT: IPv4 adresses are ALWAYS stored in IPv4-mapped IPv6 address form (::ffff:0:0/96)
+        
+        std::memset( &address, 0, 10 );
+        
+        address[10] = 0xFF;
+        address[11] = 0xFF;
+        
+        address[12] = (unsigned char)((ipV4Address_ >> 24) & 0xFFUL);
+        address[13] = (unsigned char)((ipV4Address_ >> 16) & 0xFFUL);
+        address[14] = (unsigned char)((ipV4Address_ >> 8) & 0xFFUL);
+        address[15] = (unsigned char)(ipV4Address_ & 0xFFUL);        
+    }
+    
+    //bool IsMulticastAddress() const { return ((address >> 24) & 0xFF) >= 224 && ((address >> 24) & 0xFF) <= 239; }
 
-	enum { ADDRESS_STRING_LENGTH=17 };
+	enum { ADDRESS_STRING_LENGTH=(4*8)+7+1 +20 }; // FIXME this is wrong now, the +20 is intended to account for the zone id
 	void AddressAsString( char *s ) const;
 
-	enum { ADDRESS_AND_PORT_STRING_LENGTH=23};
+	enum { ADDRESS_AND_PORT_STRING_LENGTH=(4*8)+7+1+5 +20 }; // FIXME this is wrong now, the +20 is intended to account for the zone id
 	void AddressAndPortAsString( char *s ) const;
 };
 
 inline bool operator==( const IpEndpointName& lhs, const IpEndpointName& rhs )
 {	
-	return (lhs.address == rhs.address && lhs.port == rhs.port );
+	return (lhs.addressType == rhs.addressType && lhs.port == rhs.port && std::memcmp(lhs.address,rhs.address,16) == 0 );
 }
 
 inline bool operator!=( const IpEndpointName& lhs, const IpEndpointName& rhs )

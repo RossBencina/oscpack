@@ -67,33 +67,104 @@ typedef ssize_t socklen_t;
 #endif
 
 
-static void SockaddrFromIpEndpointName( struct sockaddr_in& sockAddr, const IpEndpointName& endpoint )
+// for now we have separate compilation modes but we may want to allow
+// sockets to be in ipv6 or ipv4 mode in which case we would perform the
+// mappings from IpEndpointName to sockAddr slightly differently
+
+#define OSCPACK_IPV6
+
+
+static void SockaddrFromIpEndpointName( struct sockaddr_storage *sockAddr, socklen_t *addrlen, const IpEndpointName& endpointName )
 {
-    std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
-    sockAddr.sin_family = AF_INET;
-
-	sockAddr.sin_addr.s_addr = 
-		(endpoint.address == IpEndpointName::ANY_ADDRESS)
-		? INADDR_ANY
-		: htonl( endpoint.address );
-
-	sockAddr.sin_port =
-		(endpoint.port == IpEndpointName::ANY_PORT)
-		? 0
-		: htons( endpoint.port );
+    std::memset( (char *)sockAddr, 0, sizeof(struct sockaddr_storage) );
+    
+#ifdef OSCPACK_IPV6
+    
+    // We don't care about the address type of IpEndpointName, we always use
+    // sockaddr_in6. IpEndpointName always stores IPv4 addresses in
+    // IPv4-mapped IPv6 address form so we can use endpoint.address
+    // directly here, even if it refers to an IPv4 address.
+    
+    struct sockaddr_in6 *sin6 = (struct sockaddr_in6*)sockAddr;
+    
+    *addrlen = sizeof(struct sockaddr_in6);
+    sin6->sin6_family = AF_INET6;
+    
+    if( endpointName.addressType == IpEndpointName::IPV4_ADDRESS_TYPE
+            && endpointName.IpV4Address() == IpEndpointName::ANY_ADDRESS ){
+     
+        std::memset( sin6->sin6_addr.__u6_addr.__u6_addr8, 0, 16 ); // any address
+    }else{
+        std::memcpy( sin6->sin6_addr.__u6_addr.__u6_addr8, endpointName.address, 16 );
+    }
+    
+    sin6->sin6_scope_id = (__uint32_t)endpointName.scopeZoneIndex;
+    
+    sin6->sin6_port =
+        (endpointName.port == IpEndpointName::ANY_PORT)
+        ? 0
+        : htons( endpointName.port );
+    
+#else
+    
+    if( endpointName.addressType == IpEndpointName::IPV4_ADDRESS_TYPE ){
+        struct sockaddr_in *sin = (struct sockaddr_in*)sockAddr;
+        
+        *addrlen = sizeof(struct sockaddr_in);
+        sin->sin_family = AF_INET;
+        
+        unsigned long endpointAddress = endpointName.IpV4Address();
+        
+        sin->sin_addr.s_addr =
+            (endpointAddress == IpEndpointName::ANY_ADDRESS)
+            ? INADDR_ANY
+            : htonl( endpointAddress );
+        
+        sin->sin_port =
+            (endpointName.port == IpEndpointName::ANY_PORT)
+            ? 0
+            : htons( endpointName.port );
+        
+    }else{ assert( endpointName.addressType == IpEndpointName::IPV6_ADDRESS_TYPE );
+        
+        // can't use an IPv6 address with a UdpSocket when OSCPACK_IPV6 isn't defined
+        throw std::runtime_error("IPv6 address encountered but oscpack was not compiled to support IPv6\n");
+    }
+    
+#endif
 }
 
 
-static IpEndpointName IpEndpointNameFromSockaddr( const struct sockaddr_in& sockAddr )
+static void IpEndpointNameFromSockaddr( IpEndpointName *endpointName, const struct sockaddr_storage& sockAddr )
 {
-	return IpEndpointName( 
-		(sockAddr.sin_addr.s_addr == INADDR_ANY) 
-			? IpEndpointName::ANY_ADDRESS 
-			: ntohl( sockAddr.sin_addr.s_addr ),
-		(sockAddr.sin_port == 0)
-			? IpEndpointName::ANY_PORT
-			: ntohs( sockAddr.sin_port )
-		);
+    if( sockAddr.ss_family == AF_INET ){
+        const struct sockaddr_in *sin = (const struct sockaddr_in*)&sockAddr;
+        
+        endpointName->addressType = IpEndpointName::IPV4_ADDRESS_TYPE;
+        
+        endpointName->port = (sin->sin_port == 0)
+                ? IpEndpointName::ANY_PORT
+                : ntohs( sin->sin_port );
+        
+        endpointName->SetIpV4Address(
+                (sin->sin_addr.s_addr == INADDR_ANY)
+                    ? IpEndpointName::ANY_ADDRESS
+                    : ntohl( sin->sin_addr.s_addr ) );
+        
+    }else if( sockAddr.ss_family == AF_INET6 ){
+        const struct sockaddr_in6 *sin6 = (const struct sockaddr_in6*)&sockAddr;
+        
+        endpointName->addressType = IpEndpointName::IPV6_ADDRESS_TYPE;
+        endpointName->port = ntohs( sin6->sin6_port );
+        
+        std::memcpy( endpointName->address, sin6->sin6_addr.__u6_addr.__u6_addr8, 16 );
+        
+        endpointName->scopeZoneIndex = sin6->sin6_scope_id;
+        
+    }else{
+        
+        assert( false ); // unexpected protocol familiy
+    }
 }
 
 
@@ -102,22 +173,43 @@ class UdpSocket::Implementation{
 	bool isConnected_;
 
 	int socket_;
-	struct sockaddr_in connectedAddr_;
-	struct sockaddr_in sendToAddr_;
-
+	
+    socklen_t connectedAddrLength_;
+    struct sockaddr_storage connectedAddr_;
+    
 public:
 
+    // FIXME TODO we may want to allow for creating IPv4 sockets (use the endpoint type enumeration for selection)
+    // 
 	Implementation()
 		: isBound_( false )
 		, isConnected_( false )
 		, socket_( -1 )
 	{
-		if( (socket_ = socket( AF_INET, SOCK_DGRAM, 0 )) == -1 ){
+/*
+ We use AF_INET6 here so we need to use IPv4-mapped IPv6 addresses (see SockaddrFromIpEndpointName above)
+ But all of the code below uses sockaddr_storage and could therefore also work with a PF_INET socket
+ (in which case the code above should be using sockaddr_in and throwing exceptions for ipv6 addresses) <<< TODO
+ 
+ http://pubs.opengroup.org/onlinepubs/009619199/apdxq.htm
+ 
+ Compatibility with IPv4
+ 
+ The API provides the ability for IPv6 applications to interoperate with applications using IPv4, by using IPv4-mapped IPv6 addresses. These addresses can be generated automatically by the getipnodebyname() function when the specified host has only IPv4 addresses (as described in tagmref_endhostent).
+ Applications may use AF_INET6 sockets to open TCP connections to IPv4 nodes, or send UDP packets to IPv4 nodes, by simply encoding the destination's IPv4 address as an IPv4-mapped IPv6 address, and passing that address, within a sockaddr_in6 structure, in the connect(), sendto() or sendmsg() call. When applications use AF_INET6 sockets to accept TCP connections from IPv4 nodes, or receive UDP packets from IPv4 nodes, the system returns the peer's address to the application in the accept(), recvfrom(), recvmsg(), or getpeername() call using a sockaddr_in6 structure encoded this way. If a node has an IPv4 address, then the implementation may allow applications to communicate using that address via an AF_INET6 socket. In such a case, the address will be represented at the API by the corresponding IPv4-mapped IPv6 address. Also, the implementation may allow an AF_INET6 socket bound to in6addr_any to receive inbound connections and packets destined to one of the node's IPv4 addresses.
+ 
+ An application may use AF_INET6 sockets to bind to a node's IPv4 address by specifying the address as an IPv4-mapped IPv6 address in a sockaddr_in6 structure in the bind() call. For an AF_INET6 socket bound to a node's IPv4 address, the system returns the address in the getsockname() call as an IPv4-mapped IPv6 address in a sockaddr_in6 structure.
+ */
+
+#ifdef OSCPACK_IPV6
+        int protocolFamily = PF_INET6; // we use IpEndpointName when trying to access an IPv4 destination
+#else
+        int protocolFamily = PF_INET; // we don't support IPv6 IpEndpointNames in this mode
+#endif
+        
+		if( (socket_ = socket( protocolFamily, SOCK_DGRAM, 0 )) == -1 ){ // Stevens says AF_INET here but osx man socket says PF_INET (anyway they're both the same).
             throw std::runtime_error("unable to create udp socket\n");
         }
-
-		std::memset( &sendToAddr_, 0, sizeof(sendToAddr_) );
-        sendToAddr_.sin_family = AF_INET;
 	}
 
 	~Implementation()
@@ -149,16 +241,17 @@ public:
 
 		// first connect the socket to the remote server
         
-        struct sockaddr_in connectSockAddr;
-		SockaddrFromIpEndpointName( connectSockAddr, remoteEndpoint );
+        struct sockaddr_storage connectSockAddr;
+        socklen_t connectSockAddrLength;
+		SockaddrFromIpEndpointName( &connectSockAddr, &connectSockAddrLength, remoteEndpoint );
        
-        if (connect(socket_, (struct sockaddr *)&connectSockAddr, sizeof(connectSockAddr)) < 0) {
+        if (connect(socket_, (struct sockaddr *)&connectSockAddr, connectSockAddrLength) < 0) {
             throw std::runtime_error("unable to connect udp socket\n");
         }
 
         // get the address
 
-        struct sockaddr_in sockAddr;
+        struct sockaddr_storage sockAddr;
         std::memset( (char *)&sockAddr, 0, sizeof(sockAddr ) );
         socklen_t length = sizeof(sockAddr);
         if (getsockname(socket_, (struct sockaddr *)&sockAddr, &length) < 0) {
@@ -168,16 +261,16 @@ public:
 		if( isConnected_ ){
 			// reconnect to the connected address
 			
-			if (connect(socket_, (struct sockaddr *)&connectedAddr_, sizeof(connectedAddr_)) < 0) {
+			if (connect(socket_, (struct sockaddr *)&connectedAddr_, connectedAddrLength_) < 0) {
 				throw std::runtime_error("unable to connect udp socket\n");
 			}
 
 		}else{
 			// unconnect from the remote address
 		
-			struct sockaddr_in unconnectSockAddr;
+			struct sockaddr_storage unconnectSockAddr;
 			std::memset( (char *)&unconnectSockAddr, 0, sizeof(unconnectSockAddr ) );
-			unconnectSockAddr.sin_family = AF_UNSPEC;
+			unconnectSockAddr.ss_family = AF_UNSPEC;
 			// address fields are zero
 			int connectResult = connect(socket_, (struct sockaddr *)&unconnectSockAddr, sizeof(unconnectSockAddr));
 			if ( connectResult < 0 && errno != EAFNOSUPPORT ) {
@@ -185,14 +278,16 @@ public:
 			}
 		}
 
-		return IpEndpointNameFromSockaddr( sockAddr );
+        IpEndpointName result;
+		IpEndpointNameFromSockaddr( &result, sockAddr );
+        return result;
 	}
 
 	void Connect( const IpEndpointName& remoteEndpoint )
-	{
-		SockaddrFromIpEndpointName( connectedAddr_, remoteEndpoint );
+	{ 
+		SockaddrFromIpEndpointName( &connectedAddr_, &connectedAddrLength_, remoteEndpoint );
        
-        if (connect(socket_, (struct sockaddr *)&connectedAddr_, sizeof(connectedAddr_)) < 0) {
+        if (connect(socket_, (struct sockaddr *)&connectedAddr_, connectedAddrLength_) < 0) {
             throw std::runtime_error("unable to connect udp socket\n");
         }
 
@@ -208,18 +303,20 @@ public:
 
     void SendTo( const IpEndpointName& remoteEndpoint, const char *data, std::size_t size )
 	{
-		sendToAddr_.sin_addr.s_addr = htonl( remoteEndpoint.address );
-        sendToAddr_.sin_port = htons( remoteEndpoint.port );
-
-        sendto( socket_, data, size, 0, (sockaddr*)&sendToAddr_, sizeof(sendToAddr_) );
+        struct sockaddr_storage sendToAddr;
+        socklen_t sendToAddrLength;
+        SockaddrFromIpEndpointName( &sendToAddr, &sendToAddrLength, remoteEndpoint );
+        
+		sendto( socket_, data, size, 0, (struct sockaddr*)&sendToAddr, sendToAddrLength );
 	}
 
 	void Bind( const IpEndpointName& localEndpoint )
 	{
-		struct sockaddr_in bindSockAddr;
-		SockaddrFromIpEndpointName( bindSockAddr, localEndpoint );
+		struct sockaddr_storage bindSockAddr;
+        socklen_t bindAddrLength;
+		SockaddrFromIpEndpointName( &bindSockAddr, &bindAddrLength, localEndpoint );
 
-        if (bind(socket_, (struct sockaddr *)&bindSockAddr, sizeof(bindSockAddr)) < 0) {
+        if (bind(socket_, (struct sockaddr *)&bindSockAddr, bindAddrLength) < 0) {
             throw std::runtime_error("unable to bind udp socket\n");
         }
 
@@ -232,7 +329,7 @@ public:
 	{
 		assert( isBound_ );
 
-		struct sockaddr_in fromAddr;
+		struct sockaddr_storage fromAddr;
         socklen_t fromAddrLen = sizeof(fromAddr);
              	 
         ssize_t result = recvfrom(socket_, data, size, 0,
@@ -240,8 +337,7 @@ public:
 		if( result < 0 )
 			return 0;
 
-		remoteEndpoint.address = ntohl(fromAddr.sin_addr.s_addr);
-		remoteEndpoint.port = ntohs(fromAddr.sin_port);
+        IpEndpointNameFromSockaddr( &remoteEndpoint, fromAddr );
 
 		return (std::size_t)result;
 	}

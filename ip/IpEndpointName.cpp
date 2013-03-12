@@ -36,53 +36,94 @@
 */
 #include "IpEndpointName.h"
 
+#include <cassert>
 #include <cstdio>
 
 #include "NetworkingUtils.h"
 
 
-unsigned long IpEndpointName::GetHostByName( const char *s )
+
+IpEndpointName::IpEndpointName( const char *addressString, int port_ )
+    : addressType( IPV6_ADDRESS_TYPE )
+    , scopeZoneIndex( 0 )
+    , port( port_ )
 {
-	return ::GetHostByName(s);
+    std::memset( &address, 0, 16 );
+
+    bool isIpV6Address = true;
+        
+    IpAddressFromString( address, &scopeZoneIndex, &isIpV6Address, addressString );
+    addressType = isIpV6Address ? IPV6_ADDRESS_TYPE : IPV4_ADDRESS_TYPE;    
 }
 
 
 void IpEndpointName::AddressAsString( char *s ) const
 {
-	if( address == ANY_ADDRESS ){
-		std::sprintf( s, "<any>" );
-	}else{
-		std::sprintf( s, "%d.%d.%d.%d",
-				(int)((address >> 24) & 0xFF),
-				(int)((address >> 16) & 0xFF),
-				(int)((address >> 8) & 0xFF),
-				(int)(address & 0xFF) );
-	}
+    if( addressType == IPV4_ADDRESS_TYPE )
+    {
+        if( IpV4Address() == ANY_ADDRESS ){
+            std::sprintf( s, "<any>" );
+        }else{
+            std::sprintf( s, "%d.%d.%d.%d", address[12], address[13], address[14], address[15] );
+        }
+    }else{ assert( addressType == IPV6_ADDRESS_TYPE );
+        
+        // FIXME: do we want to detectIPv4-mapped IPv6 address form (::ffff:0:0/96) and display the last four bytes with dots?
+        
+        std::sprintf( s, "%x:%x:%x:%x:%x:%x:%x:%x%%%ld",
+                     (address[0]<<8)|address[1],
+                     (address[2]<<8)|address[3],
+                     (address[4]<<8)|address[5],
+                     (address[6]<<8)|address[7],
+                     (address[8]<<8)|address[9],
+                     (address[10]<<8)|address[11],
+                     (address[12]<<8)|address[13],
+                     (address[14]<<8)|address[15], scopeZoneIndex );
+    }
 }
 
 
 void IpEndpointName::AddressAndPortAsString( char *s ) const
 {
-	if( port == ANY_PORT ){
-		if( address == ANY_ADDRESS ){
-			std::sprintf( s, "<any>:<any>" );
-		}else{
-			std::sprintf( s, "%d.%d.%d.%d:<any>",
-				(int)((address >> 24) & 0xFF),
-				(int)((address >> 16) & 0xFF),
-				(int)((address >> 8) & 0xFF),
-				(int)(address & 0xFF) );
-		}
-	}else{
-		if( address == ANY_ADDRESS ){
-			std::sprintf( s, "<any>:%d", port );
-		}else{
-			std::sprintf( s, "%d.%d.%d.%d:%d",
-				(int)((address >> 24) & 0xFF),
-				(int)((address >> 16) & 0xFF),
-				(int)((address >> 8) & 0xFF),
-				(int)(address & 0xFF),
-				(int)port );
-		}
-	}	
+    if( addressType == IPV4_ADDRESS_TYPE )
+    {
+        if( IpV4Address() == ANY_ADDRESS ){
+            if( port == ANY_PORT ){
+                std::sprintf( s, "<any>:<any>" );
+            }else{
+                std::sprintf( s, "<any>:%d", (int)port );            
+            }
+        }else{
+            if( port == ANY_PORT ){
+                std::sprintf( s, "%d.%d.%d.%d:<any>", address[12], address[13], address[14], address[15] );
+            }else{
+                std::sprintf( s, "%d.%d.%d.%d:%d", address[12], address[13], address[14], address[15], (int)port );
+            }
+        }
+    }else{ assert( addressType == IPV6_ADDRESS_TYPE );
+        
+        // FIXME: do we want to detectIPv4-mapped IPv6 address form (::ffff:0:0/96) and display the last four bytes with dots?
+        
+        if( port == ANY_PORT ){        
+            std::sprintf( s, "[%x:%x:%x:%x:%x:%x:%x:%x%%%ld]:<any>",
+                         (address[0]<<8)|address[1],
+                         (address[2]<<8)|address[3],
+                         (address[4]<<8)|address[5],
+                         (address[6]<<8)|address[7],
+                         (address[8]<<8)|address[9],
+                         (address[10]<<8)|address[11],
+                         (address[12]<<8)|address[13],
+                         (address[14]<<8)|address[15], scopeZoneIndex );
+        }else{
+            std::sprintf( s, "[%x:%x:%x:%x:%x:%x:%x:%x%%%ld]:%d",
+                         (address[0]<<8)|address[1],
+                         (address[2]<<8)|address[3],
+                         (address[4]<<8)|address[5],
+                         (address[6]<<8)|address[7],
+                         (address[8]<<8)|address[9],
+                         (address[10]<<8)|address[11],
+                         (address[12]<<8)|address[13],
+                         (address[14]<<8)|address[15], scopeZoneIndex, (int)port );
+        }
+    }
 }
