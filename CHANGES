@@ -56,6 +56,8 @@ merges changes from the Open Frameworks version of oscpack.
     message arguments (thanks Gwydion ap Dafydd). The other in 
     the posix SocketReceiveMultiplexer::Run() method if an exception 
     was thrown while listening.
+    
+    - Updated and improved Makefile (thanks Douglas Mandell)
    
     - Added CMakeLists.txt cmake build file (2010, thanks David Doria)
       
@@ -64,8 +66,9 @@ merges changes from the Open Frameworks version of oscpack.
     boilerplate). See LICENSE file.
 
 Thanks to Tim Blechmann, Rob Canning, Gwydion ap Dafydd, David Doria, 
-all the guys at Open Frameworks, and everyone who reported bugs, 
-submitted patches and helped out with testing this release.
+Christopher Delaney, Jon McCormack, Douglas Mandell, all the guys at 
+Open Frameworks, and everyone who reported bugs, submitted patches 
+and helped out with testing this release.
 
 Thanks to Syneme at the University of Calgary for providing financial 
 support for the 1.1.0 update.
