@@ -462,14 +462,21 @@ public:
                     timeoutPtr = &timeout;
                 }
 
-                if( select( fdmax + 1, &tempfds, 0, 0, timeoutPtr ) < 0 && errno != EINTR ){
-                    if( break_ )
+                if( select( fdmax + 1, &tempfds, 0, 0, timeoutPtr ) < 0 ){
+                    if( break_ ){
                         break;
-                    else
+                    }else if( errno == EINTR ){
+                        // on returning an error, select() doesn't clear tempfds.
+                        // so tempfds would remain all set, which would cause read( breakPipe_[0]...
+                        // below to block indefinitely. therefore if select returns EINTR we restart
+                        // the while() loop instead of continuing on to below.
+                        continue;
+                    }else{
                         throw std::runtime_error("select failed\n");
+                    }
                 }
 
-                if ( FD_ISSET( breakPipe_[0], &tempfds ) ){
+                if( FD_ISSET( breakPipe_[0], &tempfds ) ){
                     // clear pending data from the asynchronous break pipe
                     char c;
                     read( breakPipe_[0], &c, 1 );
